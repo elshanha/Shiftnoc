@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reminder">Reminder</string>
+    <string name="next">Next</string>
+    <string name="back">Back</string>
+    <string name="get_started">Get Started</string>
+    <string name="select_color">Select Color</string>
+    <string name="select">Select</string>
+    <string name="cancel">Cancel</string>
+    <string name="color_picker">Color Picker</string>
+    <string name="selected_date">Selected Date</string>
+    <string name="done">Done</string>
+    <string name="monthly">Monthly</string>
+    <string name="weekly">Weekly</string>
+    <string name="pattern">Pattern</string>
+    <string name="date">Date</string>
+    <string name="delete_all">Delete All</string>
+    <string name="delete">Delete</string>
+    <string name="delete_all_notes">Delete All Notes</string>
+    <string name="are_you_sure_you_want_to_delete_all_notes_this_action_cannot_be_undone">Are you sure you want to delete all notes? This action cannot be undone.</string>
+    <string name="predefined_patterns">Predefined Patterns</string>
+    <string name="custom_patterns">Custom Patterns</string>
+    <string name="select_work_pattern">Select Work Pattern</string>
+    <string name="you_can_add_up_to_3_custom_patterns">You can add up to 3 custom patterns</string>
+    <string name="add_custom_pattern">Add Custom Pattern</string>
+    <string name="edit_pattern">Edit Pattern</string>
+    <string name="add_pattern">Add Pattern</string>
+    <string name="pattern_name">Pattern Name</string>
+    <string name="clear_shifts">Clear Shifts</string>
+    <string name="pattern_shifts">Pattern Shifts: %1$s</string>
+    <string name="add_shift">Add Shift</string>
+    <string name="maximum_number_of_notes_reached_for_this_date">Maximum number of notes reached for this date.</string>
+    <string name="save">Save</string>
+    <string name="add_note">Add Note</string>
+    <string name="edit_note">Edit Note</string>
+    <string name="note">Note…</string>
+    <string name="select_first_day_of_the_week">Select First Day of the Week</string>
+    <string name="settings">Settings</string>
+    <string name="first_day_of_the_week">First day of the week</string>
+    <string name="calendar_view">Calendar View</string>
+    <string name="vertical_monthly">Vertical Monthly</string>
+    <string name="horizontal_monthly">Horizontal Monthly</string>
+    <string name="select_language">Select language</string>
+    <string name="reminder_cannot_be_in_the_past">Reminder cannot be in the past.</string>
+    <string name="actions">Actions</string>
+    <string name="language_selector">Language Selector</string>
+    <string name="week_selector">Week Selector</string>
+    <string name="general">General</string>
+    <string name="english">English</string>
+    <string name="azerbaijani">Azerbaijani</string>
+
+
+    <!-- Shift Types -->
+    <string name="shift_morning">Morning</string>
+    <string name="shift_night">Night</string>
+    <string name="shift_off">Off</string>
+
+    <!-- Work Patterns -->
+    <string name="default_work_pattern">Default</string>
+    <string name="pattern_1day_work_1day_off">1 day work, 1 day off</string>
+    <string name="pattern_2days_work_2days_off">2 days work, 2 days off</string>
+    <string name="pattern_1day_work_2days_off">1 day work, 2 days off</string>
+    <string name="dismiss">Dismiss</string>
+
+
+    />
+
+</resources>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reminder">Xatırlatma</string>
+    <string name="next">Sonrakı</string>
+    <string name="back">Geri</string>
+    <string name="get_started">Başla</string>
+    <string name="select_color">Rəngi Seç</string>
+    <string name="select">Seç</string>
+    <string name="cancel">Ləğv et</string>
+    <string name="color_picker">Rəng Seç</string>
+    <string name="selected_date">Seçilən Tarix</string>
+    <string name="done">Hazır</string>
+    <string name="monthly">Aylıq</string>
+    <string name="weekly">Həftəlik</string>
+    <string name="pattern">Qrafik</string>
+    <string name="date">Tarix</string>
+    <string name="delete_all">Hamısını Sil</string>
+    <string name="delete">Sil</string>
+    <string name="delete_all_notes">Bütün notları sil</string>
+    <string name="are_you_sure_you_want_to_delete_all_notes_this_action_cannot_be_undone">
+        Bütün qeydləri silmək istədiyinizə əminsiniz? Geri qaytarmaq mümkün olmayacaq.
+    </string>
+    <string name="predefined_patterns">Hazır Qrafiklər</string>
+    <string name="custom_patterns">Xüsusi Qrafiklər</string>
+    <string name="select_work_pattern">İş Qrafikini Seç</string>
+    <string name="you_can_add_up_to_3_custom_patterns">Maksimum 3 Xüsusi Qrafik əlavə edə bilərsiniz.</string>
+    <string name="add_custom_pattern">Xüsusi Qrafik əlavə et</string>
+    <string name="edit_pattern">Qrafiki yenilə</string>
+    <string name="add_pattern">Qrafik əlavə et</string>
+    <string name="pattern_name">Ad</string>
+    <string name="clear_shifts">Təmizlə</string>
+    <string name="pattern_shifts">Günlər: %1$s</string>
+    <string name="add_shift">Əlavə Et</string>
+    <string name="maximum_number_of_notes_reached_for_this_date">
+        Bu tarix üçün not limitinə çatdınız.
+    </string>
+    <string name="save">Yadda saxla</string>
+    <string name="add_note">Not əlavə et</string>
+    <string name="edit_note">Notu yenilə</string>
+    <string name="note">Not…</string>
+    <string name="select_first_day_of_the_week">Həftənin ilk gününü seç</string>
+    <string name="settings">Tənzimləmələr</string>
+    <string name="first_day_of_the_week">Həftənin ilk günü</string>
+    <string name="calendar_view">Təqvimin görünüşü</string>
+    <string name="vertical_monthly">Şaquli Təqvim</string>
+    <string name="horizontal_monthly">Üfiqi təqvim</string>
+    <string name="select_language">Dili seç</string>
+    <string name="reminder_cannot_be_in_the_past">Xatırlatma zamanı keçmiş olmamalıdır.</string>
+    <string name="actions">Düymələr</string>
+    <string name="language_selector">Dili Seç</string>
+    <string name="week_selector">Week Selector</string>
+    <string name="general">Ümumi</string>
+    <string name="english">İngilis dili</string>
+    <string name="azerbaijani">Azərbaycan dili</string>
+
+    <!-- Shift Types -->
+    <string name="shift_morning">Gündüz</string>
+    <string name="shift_night">Gecə</string>
+    <string name="shift_off">Ev günü</string>
+
+    <!-- Work Patterns -->
+    <string name="default_work_pattern">Default</string>
+    <string name="pattern_1day_work_1day_off">1 gün iş, 1 gün ev</string>
+    <string name="pattern_2days_work_2days_off">2 gün iş, 2 gün ev</string>
+    <string name="pattern_1day_work_2days_off">1 gün iş, 2 gün ev</string>
+    <string name="dismiss">Ləğv et</string>
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Shiftnoc</string>
+    <string name="en" translatable="false">English</string>
+    <string name="en_language" translatable="false">English</string>
+    <string name="az" translatable="false">Azərbaycan</string>
+    <string name="az_language" translatable="false">Azərbaycan</string>
+
+
+</resources>
