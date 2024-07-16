@@ -19,5 +19,7 @@ object DIALOGS {
     const val SHOW_EXPANDABLE_BUTTONS = "showExpandableButtons"
     const val SHOW_DAY_PICKER = "dayPickerDialog"
     const val SHOW_EXPANDABLE_BUTTONS_TO_LEFT = "showExpandableButtonsToLeft"
+    const val SHOW_AUTOSTART_INSTRUCTIONS = "showAutostartInstructions"
+    const val REQUEST_EXACT_ALARM_PERMISSION = "requestExactAlarmPermission"
 }
 

@@ -27,10 +27,15 @@ sealed class CalendarEvent {
         CalendarEvent()
 
     data class RemoveCustomWorkPattern(val pattern: WorkPattern) : CalendarEvent()
-    data class EditCustomWorkPattern(val oldPattern: WorkPattern, val newPattern: WorkPattern) : CalendarEvent()
+    data class EditCustomWorkPattern(val oldPattern: WorkPattern, val newPattern: WorkPattern) :
+        CalendarEvent()
+
     data class SetSelectedPattern(val workPattern: WorkPattern?) : CalendarEvent()
 
     data object OnBoardingCompleted : CalendarEvent()
-    data class SetLanguagePreference(val language: String, val context : Context) : CalendarEvent()
+    data class SetLanguagePreference(val language: String, val context: Context) : CalendarEvent()
+    data object ToggleFullScreen : CalendarEvent()
+    data object SetAutostartInstructionsShown : CalendarEvent()
+
 
 }

@@ -1,7 +1,15 @@
 package com.elshan.shiftnoc.presentation.screen.note
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateSizeAsState
+import androidx.compose.animation.core.animateValueAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -12,7 +20,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,8 +34,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.CloseFullscreen
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +53,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -49,6 +64,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.data.local.NoteEntity
 import com.elshan.shiftnoc.presentation.calendar.AppState
@@ -76,8 +92,19 @@ fun AddEditNoteDialog(
     val maxNotesReached = existingNotes.size >= 3
 
 
+    val targetModifier = if (appState.isFullScreen) Modifier.fillMaxSize() else Modifier
+
 
     AlertDialog(
+        properties = DialogProperties(
+            usePlatformDefaultWidth = !appState.isFullScreen
+        ),
+        modifier = targetModifier.animateContentSize(
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessHigh
+            )
+        ),
         containerColor = MaterialTheme.colorScheme.secondaryContainer,
         onDismissRequest = {
             onEvent(CalendarEvent.HideDialog(DIALOGS.ADD_EDIT_NOTE))
@@ -188,8 +215,8 @@ fun AddEditNoteDialog(
                                     modifier = Modifier
                                         .fillMaxWidth(0.8f),
                                     text = note.content,
-                                    maxLines = 3,
-                                    overflow = TextOverflow.Ellipsis,
+                                    maxLines = if (appState.isFullScreen) Int.MAX_VALUE else 3,
+                                    overflow = if (appState.isFullScreen) TextOverflow.Visible else TextOverflow.Ellipsis,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                                 Text(
@@ -248,7 +275,7 @@ fun AddEditNoteDialog(
             }) {
                 Text(stringResource(R.string.cancel))
             }
-        }
+        },
     )
 }
 
@@ -294,12 +321,21 @@ private fun NoteDialogTitle(
                     )
             )
         }
+
+        IconButton(onClick = {
+            onEvent(CalendarEvent.ToggleFullScreen)
+        }) {
+            Icon(
+                imageVector = if (appState.isFullScreen) Icons.Default.CloseFullscreen else Icons.Outlined.OpenInFull,
+                contentDescription = "Toggle Full Screen",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
     }
 }
 
 @Composable
 fun ContentTextField(content: String, onContentChange: (String) -> Unit) {
-
     OutlinedTextField(
         value = content,
         onValueChange = {
@@ -314,7 +350,8 @@ fun ContentTextField(content: String, onContentChange: (String) -> Unit) {
         ),
         shape = RoundedCornerShape(16.dp),
         colors = OutlinedTextFieldDefaults.colors().copy(
-            focusedTextColor = MaterialTheme.colorScheme.secondary
+            focusedTextColor = MaterialTheme.colorScheme.secondary,
+            unfocusedTextColor = MaterialTheme.colorScheme.secondary,
         ),
         trailingIcon = {
             IconButton(onClick = {
@@ -348,7 +385,7 @@ fun AddNotePreview() {
                         reminder = LocalDateTime.now(),
                         content = "Note 1",
                         color = "#FF5733"
-                        ),
+                    ),
 
                     NoteEntity(
                         id = 2,

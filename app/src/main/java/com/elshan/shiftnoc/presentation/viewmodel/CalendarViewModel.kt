@@ -25,6 +25,7 @@ import com.elshan.shiftnoc.util.updateLocale
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
@@ -64,6 +65,7 @@ class CalendarViewModel @Inject constructor(
             }
         }
         loadLanguagePreference()
+        loadAutostartInstructionsShown()
     }
 
     private fun fetchAllNotes() {
@@ -131,6 +133,11 @@ class CalendarViewModel @Inject constructor(
                 UserPreferencesRepository(event.context).setLanguagePreference(event.language)
             }
 
+            is CalendarEvent.ToggleFullScreen -> {
+                _appState.update { it.copy(isFullScreen = !it.isFullScreen) }
+            }
+
+            is CalendarEvent.SetAutostartInstructionsShown -> saveAutostartInstructionsShown()
         }
     }
 
@@ -154,14 +161,14 @@ class CalendarViewModel @Inject constructor(
         notificationsService.createNotificationChannel()
     }
 
-    private fun showNotification(noteId: Long, content: String, reminder: LocalDateTime) {
+    private fun showNotification(note: NoteEntity) {
         viewModelScope.launch {
-            notificationsService.showNotification(noteId, content, reminder)
+            notificationsService.showNotification(note = note)
         }
     }
 
-    fun hideNotification(notificationId: Int) {
-        notificationsService.hideNotification(notificationId)
+    fun hideNotification(note: NoteEntity) {
+        notificationsService.hideNotification(note = note)
     }
 
     private fun selectDate(date: LocalDate) {
@@ -181,18 +188,18 @@ class CalendarViewModel @Inject constructor(
                     val intent = Intent(app, AlarmReceiver::class.java)
                     val pendingIntent = PendingIntent.getBroadcast(
                         app,
-                        note.id.toInt(),
+                        note.id.hashCode(),
                         intent,
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
-                    val alarmManager = app.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                    val alarmManager = app.getSystemService(AlarmManager::class.java)
                     alarmManager.cancel(pendingIntent)
                 }
 
                 // Schedule new reminder if the reminder is in the future
                 note.reminder?.let { reminder ->
                     if (reminder.isAfter(LocalDateTime.now())) {
-                        showNotification(note.id, note.content, reminder)
+                        showNotification(note)
                     } else {
                         Toast.makeText(
                             app.applicationContext,
@@ -201,7 +208,6 @@ class CalendarViewModel @Inject constructor(
                         ).show()
                     }
                 }
-
                 fetchAllNotes()
             } else {
 
@@ -247,9 +253,11 @@ class CalendarViewModel @Inject constructor(
             val currentPatterns = userPreferencesRepository.loadCustomWorkPatterns.first()
             val updatedPatterns = currentPatterns + pattern
             userPreferencesRepository.saveCustomWorkPatterns(updatedPatterns)
-            _appState.update { it.copy(
-                customWorkPatterns = updatedPatterns,
-            ) }
+            _appState.update {
+                it.copy(
+                    customWorkPatterns = updatedPatterns,
+                )
+            }
         }
     }
 
@@ -390,6 +398,21 @@ class CalendarViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferencesRepository.loadCustomWorkPatterns.collect { customPatterns ->
                 _appState.update { it.copy(customWorkPatterns = customPatterns) }
+            }
+        }
+    }
+
+    private fun saveAutostartInstructionsShown() {
+        viewModelScope.launch {
+            userPreferencesRepository.saveShowAutostartInstructions(true)
+            _appState.update { it.copy(isAutostartEnabled = true) }
+        }
+    }
+
+    private fun loadAutostartInstructionsShown() {
+        viewModelScope.launch {
+            userPreferencesRepository.loadAutostartInstructions.collect { autoStart ->
+                _appState.update { it.copy(isAutostartEnabled = autoStart) }
             }
         }
     }

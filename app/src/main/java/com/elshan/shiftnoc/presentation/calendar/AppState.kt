@@ -26,6 +26,8 @@ data class AppState(
     val showNoteDialog: Boolean = false,
     val visibleDialogs: Set<String> = emptySet(),
     val customWorkPatterns: List<WorkPattern> = emptyList(),
-    val language: String = Locale.getDefault().language
+    val language: String = Locale.getDefault().language,
+    val isFullScreen: Boolean = false,
+    val isAutostartEnabled: Boolean = false,
 
 )

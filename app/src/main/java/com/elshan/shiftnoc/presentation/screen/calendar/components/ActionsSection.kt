@@ -212,7 +212,6 @@ fun ExpandedActions(
     appState: AppState,
     onEvent: (CalendarEvent) -> Unit,
 ) {
-    val scope = rememberCoroutineScope()
 
     if (appState.visibleDialogs.contains(
             DIALOGS.WORK_PATTERN_MANAGER

@@ -12,9 +12,11 @@ import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.compose.ui.util.trace
 import androidx.core.app.NotificationCompat
 import com.elshan.shiftnoc.R
+import com.elshan.shiftnoc.data.local.NoteEntity
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -23,9 +25,9 @@ const val NOTIFICATION_CHANNEL_NAME = "Reminder"
 const val REQUEST_CODE = 200
 
 interface NotificationsService {
-    suspend fun showNotification(noteId: Long, content: String, reminder: LocalDateTime)
+    suspend fun showNotification(note: NoteEntity)
     fun createNotificationChannel()
-    fun hideNotification(notificationId: Int)
+    fun hideNotification(note: NoteEntity)
 }
 
 
@@ -36,42 +38,36 @@ class NotificationsServiceImpl(
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    override suspend fun showNotification(noteId: Long, content: String, reminder: LocalDateTime) {
-        // Calculate the delay until the reminder time
-        val notificationTime = reminder.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
-        // Create an intent for the AlarmReceiver
+    override suspend fun showNotification(note: NoteEntity) {
+        val notificationTime =
+            (note.reminder?.atZone(ZoneId.systemDefault())?.toEpochSecond() ?: 0) * 1000
+
         val intent = Intent(context, AlarmReceiver::class.java).apply {
-            putExtra("noteId", noteId)
-            putExtra("content", content)
+            putExtra("noteId", note.id)
+            putExtra("content", note.content)
         }
 
-        // Create a PendingIntent for the alarm
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            noteId.toInt(),
+            note.id.hashCode(),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                alarmManager.canScheduleExactAlarms()
-            } else {
-                true
-            }
-        ) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                notificationTime,
-                pendingIntent
-            )
-        }
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            notificationTime,
+            pendingIntent
+        )
+        Log.d("Notification", "Notification scheduled for ${note.reminder}")
+        Log.d("alarm,","will be set at $notificationTime")
     }
 
     override fun createNotificationChannel() {
-        val soundUri = Uri.parse("android.resource://${context.packageName}/${R.raw.sms_notification}")
+        val soundUri =
+            Uri.parse("android.resource://${context.packageName}/${R.raw.sms_notification}")
 
         val vibration = longArrayOf(0, 2000, 100, 2000)
 
@@ -98,8 +94,16 @@ class NotificationsServiceImpl(
     }
 
 
-    override fun hideNotification(notificationId: Int) {
-        notificationManager.cancel(notificationId)
+    override fun hideNotification(note: NoteEntity) {
+        alarmManager.cancel(
+            PendingIntent.getBroadcast(
+                context,
+                note.id.hashCode(),
+                Intent(context, AlarmReceiver::class.java),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        )
+        notificationManager.cancel(note.id.hashCode())
     }
 }
 

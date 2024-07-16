@@ -37,7 +37,7 @@ class BootBroadcastReceiver : BroadcastReceiver() {
             notes.forEach { note ->
                 note.reminder?.let { reminder ->
                     if (reminder.isAfter(LocalDateTime.now())) {
-                        notificationsService.showNotification(note.id, note.content, reminder)
+                        notificationsService.showNotification(note)
                     }
                 }
             }

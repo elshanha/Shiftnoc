@@ -1,5 +1,9 @@
 package com.elshan.shiftnoc.presentation.screen.calendar
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -31,7 +35,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.elshan.shiftnoc.notification.RequestExactAlarmPermissionDialog
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.components.CustomMonthHeader
@@ -41,6 +47,7 @@ import com.elshan.shiftnoc.presentation.components.MonthBody
 import com.elshan.shiftnoc.presentation.components.MonthHeader
 import com.elshan.shiftnoc.presentation.components.getShiftType
 import com.elshan.shiftnoc.presentation.datastore.UserPreferencesRepository
+import com.elshan.shiftnoc.presentation.main.components.ShowAutostartInstructionsDialogIfNeeded
 import com.elshan.shiftnoc.presentation.screen.calendar.components.ActionsSection
 import com.elshan.shiftnoc.presentation.screen.calendar.components.MonthDayComponent
 import com.elshan.shiftnoc.presentation.screen.calendar.week.WeeklyCalendar
@@ -72,15 +79,6 @@ fun FullScreenCalendar(
     appState: AppState,
     navController: NavController
 ) {
-
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        val dataPreference = UserPreferencesRepository(context = context)
-        dataPreference.languagePreference.collect {
-            updateLocale(context, it)
-        }
-    }
-
     val selectedMonth by remember {
         derivedStateOf {
             appState.startDate?.yearMonth ?: LocalDate.now().yearMonth
@@ -102,7 +100,6 @@ fun FullScreenCalendar(
         firstDayOfWeek = appState.firstDayOfWeek,
         outDateStyle = OutDateStyle.EndOfRow
     )
-
 
     if (appState.visibleDialogs.contains(DIALOGS.ADD_EDIT_NOTE)) {
         AddEditNoteDialog(
@@ -131,15 +128,17 @@ fun FullScreenCalendar(
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.background)
                 ) {
-                    val monthTitle = if (monthState.lastVisibleMonth.yearMonth.year == Year.now().value) {
-                        monthState.lastVisibleMonth.yearMonth.month.displayText().replaceFirstChar {
-                            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                    val monthTitle =
+                        if (monthState.lastVisibleMonth.yearMonth.year == Year.now().value) {
+                            monthState.lastVisibleMonth.yearMonth.month.displayText()
+                                .replaceFirstChar {
+                                    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                                }
+                        } else {
+                            monthState.lastVisibleMonth.yearMonth.displayText().replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                            }
                         }
-                    } else {
-                        monthState.lastVisibleMonth.yearMonth.displayText().replaceFirstChar {
-                            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-                        }
-                    }
                     CenterAlignedTopAppBar(
                         colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = MaterialTheme.colorScheme.background,

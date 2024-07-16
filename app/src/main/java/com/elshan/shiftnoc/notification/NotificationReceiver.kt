@@ -20,14 +20,13 @@ import com.elshan.shiftnoc.R
 class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val noteId = intent.getLongExtra("noteId", -1L)
+        val noteId = intent.getLongExtra("noteId", 0L)
         val content = intent.getStringExtra("content") ?: return
 
         sendNotification(context, noteId, content)
     }
 
     private fun sendNotification(context: Context, noteId: Long, content: String) {
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
@@ -41,7 +40,7 @@ class AlarmReceiver : BroadcastReceiver() {
         }
 
         val notificationManager = NotificationManagerCompat.from(context)
-        val notificationId = noteId.toInt()
+        val notificationId = noteId.hashCode()
 
         val notificationIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

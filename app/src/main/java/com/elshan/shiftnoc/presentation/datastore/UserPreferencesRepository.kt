@@ -41,9 +41,8 @@ object PreferencesKeys {
     val CUSTOM_WORK_PATTERNS = stringPreferencesKey("custom_work_patterns")
     val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
     val LANGUAGE = stringPreferencesKey("language")
-
+    val SHOW_AUTOSTART_INSTRUCTIONS = booleanPreferencesKey("show_autostart_instructions")
 }
-
 
 class UserPreferencesRepository(context: Context) {
 
@@ -123,7 +122,8 @@ class UserPreferencesRepository(context: Context) {
         loadCustomWorkPatterns
     ) { workPatternName, customPatterns ->
         val allPatterns = predefinedWorkPatterns + customPatterns
-        val workPattern = allPatterns.find { pattern -> pattern.name == workPatternName } ?: defaultWorkPattern
+        val workPattern =
+            allPatterns.find { pattern -> pattern.name == workPatternName } ?: defaultWorkPattern
         Log.d("Datastore", "loadWorkPattern: $workPatternName")
         workPattern
     }
@@ -168,6 +168,16 @@ class UserPreferencesRepository(context: Context) {
         }
     }
 
+    suspend fun saveShowAutostartInstructions(show: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SHOW_AUTOSTART_INSTRUCTIONS] = show
+        }
+    }
+
+    val loadAutostartInstructions: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.SHOW_AUTOSTART_INSTRUCTIONS] ?: false
+        }
 
 }
 
