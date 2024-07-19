@@ -1,4 +1,4 @@
-# Shitnoc - Shift Scheduler App
+# Shiftnoc - Shift Scheduler App
 
 Shiftnoc is a comprehensive tool designed to help users manage their work patterns, shifts, and calendar events efficiently. This app supports multiple languages, customizable work patterns, and various calendar views to cater to different scheduling needs.
 
