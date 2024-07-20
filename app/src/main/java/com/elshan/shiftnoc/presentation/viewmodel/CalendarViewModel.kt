@@ -3,10 +3,12 @@ package com.elshan.shiftnoc.presentation.viewmodel
 import android.app.AlarmManager
 import android.app.Application
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
+import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.elshan.shiftnoc.R
@@ -16,16 +18,20 @@ import com.elshan.shiftnoc.notification.AlarmReceiver
 import com.elshan.shiftnoc.notification.NotificationsService
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
+import com.elshan.shiftnoc.presentation.calendar.VacationDays
 import com.elshan.shiftnoc.presentation.components.ShiftType
 import com.elshan.shiftnoc.presentation.components.WorkPattern
 import com.elshan.shiftnoc.presentation.components.getAllWorkPatterns
 import com.elshan.shiftnoc.presentation.datastore.UserPreferencesRepository
-import com.elshan.shiftnoc.util.CalendarView
+import com.elshan.shiftnoc.util.enums.CalendarView
+import com.elshan.shiftnoc.util.SnackbarManager
+import com.elshan.shiftnoc.util.enums.DateKind
+import com.elshan.shiftnoc.util.enums.DateSort
 import com.elshan.shiftnoc.util.updateLocale
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
@@ -50,11 +56,16 @@ class CalendarViewModel @Inject constructor(
     init {
         loadPreferences()
         fetchAllNotes()
-        checkExactAlarmPermission()
+        _appState.update { currentState ->
+            currentState.copy(snackbarManager = SnackbarManager(viewModelScope))
+        }
     }
 
+
     private fun loadPreferences() {
-        getStartDate()
+        loadStartDate()
+        loadVacationStartDate()
+        loadVacationEndDate()
         loadOnboardingPreference()
         getFirstDayOfWeek()
         getCalendarView()
@@ -66,6 +77,8 @@ class CalendarViewModel @Inject constructor(
         }
         loadLanguagePreference()
         loadAutostartInstructionsShown()
+        loadRequestExactAlarmPermission()
+        loadVacations()
     }
 
     private fun fetchAllNotes() {
@@ -88,17 +101,9 @@ class CalendarViewModel @Inject constructor(
     }
 
 
-    private fun checkExactAlarmPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (!alarmManager.canScheduleExactAlarms()) {
-                _appState.update { it.copy(visibleDialogs = _appState.value.visibleDialogs + "exactAlarmPermission") }
-            }
-        }
-    }
-
     fun onEvent(event: CalendarEvent) {
         when (event) {
-            is CalendarEvent.OnDateSelected -> saveStartDate(event.date)
+            is CalendarEvent.OnDateSelected -> saveDate(event.date, event.dateKind)
             is CalendarEvent.OnWorkPatternSelected -> saveWorkPattern(event.workPattern)
             is CalendarEvent.OnFirstDayOfWeekSelected -> saveFirstDayOfWeek(event.firstDayOfWeek)
             is CalendarEvent.OnCalendarViewChanged -> saveCalendarView(event.calendarView)
@@ -138,7 +143,97 @@ class CalendarViewModel @Inject constructor(
             }
 
             is CalendarEvent.SetAutostartInstructionsShown -> saveAutostartInstructionsShown()
+            is CalendarEvent.SetRequestExactAlarmPermission -> saveRequestExactAlarmPermission()
+            is CalendarEvent.ShowSnackBar -> showCustomSnackbar(
+                message = event.message,
+                actionLabel = event.actionLabel,
+                duration = event.duration ?: SnackbarDuration.Short,
+                onAction = event.onAction
+            )
+
+            is CalendarEvent.SaveVacations -> saveVacations(event.vacations)
+            is CalendarEvent.OnVacationSelected -> onVacationSelected(
+                event.date,
+                event.dateSort
+            )
+
+            is CalendarEvent.DeleteVacation -> deleteVacation(event.vacation)
+            is CalendarEvent.ShowToast -> showToast(event.message)
         }
+    }
+
+    private fun onVacationSelected(date: LocalDate, dateSort: DateSort) {
+        val selectedVacation = appState.value.selectedVacation
+        val updatedVacation = when (dateSort) {
+            DateSort.VACATION_START -> selectedVacation?.copy(startDate = date)
+            DateSort.VACATION_END -> selectedVacation?.copy(endDate = date)
+            else -> selectedVacation
+        }
+
+        if (updatedVacation != null && updatedVacation.startDate.isAfter(updatedVacation.endDate)) {
+            Toast.makeText(
+                app.applicationContext,
+                app.applicationContext.getString(R.string.vacation_end_date_must_be_after_vacation_start_date),
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            _appState.update {
+                it.copy(
+                    selectedVacation = updatedVacation ?: VacationDays(
+                        startDate = date,
+                        endDate = date,
+                        description = ""
+                    ),
+                )
+            }
+        }
+    }
+
+    private fun saveVacations(vacations: List<VacationDays>) {
+        viewModelScope.launch {
+            userPreferencesRepository.saveVacations(vacations)
+            _appState.update {
+                it.copy(
+                    vacations = vacations,
+                    selectedVacation = null
+                )
+            }
+        }
+    }
+
+    private fun loadVacations() {
+        viewModelScope.launch {
+            userPreferencesRepository.loadVacations.collect { vacations ->
+                Log.d("CalendarViewModel", "Loaded vacations: $vacations")
+                _appState.update { it.copy(vacations = vacations) }
+            }
+        }
+    }
+
+    private fun deleteVacation(vacation: VacationDays) {
+        val updatedVacations = appState.value.vacations.toMutableList().apply {
+            remove(vacation)
+        }
+        Toast.makeText(
+            app.applicationContext,
+            app.applicationContext.getString(R.string.vacation_deleted),
+            Toast.LENGTH_SHORT
+        ).show()
+        saveVacations(updatedVacations)
+    }
+
+    private fun showCustomSnackbar(
+        message: String,
+        actionLabel: String? = null,
+        duration: SnackbarDuration = SnackbarDuration.Short,
+        onAction: (() -> Unit)? = null
+    ) {
+        _appState.value.snackbarManager?.showSnackbar(
+            message = message,
+            actionLabel = actionLabel,
+            duration = duration,
+            onAction = onAction
+        )
     }
 
     private fun toggleDialog(dialogKey: String) {
@@ -162,18 +257,41 @@ class CalendarViewModel @Inject constructor(
     }
 
     private fun showNotification(note: NoteEntity) {
+        val context = app.applicationContext
         viewModelScope.launch {
-            notificationsService.showNotification(note = note)
-        }
-    }
-
-    fun hideNotification(note: NoteEntity) {
-        notificationsService.hideNotification(note = note)
-    }
-
-    private fun selectDate(date: LocalDate) {
-        _appState.update {
-            it.copy(selectedDate = date, noteEntity = null)
+            notificationsService.showNotification(
+                note = note,
+                onPermissionError = {
+                    showCustomSnackbar(
+                        message = app.applicationContext.getString(R.string.please_grant_the_permission_in_the_settings),
+                        actionLabel = app.applicationContext.getString(R.string.settings),
+                        duration = SnackbarDuration.Short,
+                        onAction = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                if (!alarmManager.canScheduleExactAlarms()) {
+                                    val intent =
+                                        Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                                            putExtra(
+                                                Settings.EXTRA_APP_PACKAGE,
+                                                context.packageName
+                                            )
+                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        }
+                                    context.startActivity(intent)
+                                    viewModelScope.launch {
+                                        delay(1000)
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.please_allow),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            )
         }
     }
 
@@ -184,33 +302,64 @@ class CalendarViewModel @Inject constructor(
                 mainRepository.upsertNote(note)
 
                 // Cancel existing reminder if any
-                note.reminder?.let { reminder ->
-                    val intent = Intent(app, AlarmReceiver::class.java)
-                    val pendingIntent = PendingIntent.getBroadcast(
-                        app,
-                        note.id.hashCode(),
-                        intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-                    val alarmManager = app.getSystemService(AlarmManager::class.java)
-                    alarmManager.cancel(pendingIntent)
-                }
+                cancelExistingReminder(note)
 
                 // Schedule new reminder if the reminder is in the future
+                scheduleNewReminder(note)
+                fetchAllNotes()
+            }
+        }
+    }
+
+    private fun cancelExistingReminder(note: NoteEntity) {
+        note.reminder?.let {
+            val intent = Intent(app, AlarmReceiver::class.java)
+            val pendingIntent = PendingIntent.getBroadcast(
+                app,
+                note.id.hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            alarmManager.cancel(pendingIntent)
+        }
+    }
+
+    private fun scheduleNewReminder(note: NoteEntity) {
+        note.reminder?.let { reminder ->
+            if (reminder.isAfter(LocalDateTime.now())) {
+                showNotification(
+                    note = note,
+                )
+            } else {
+                showPastReminderToast()
+            }
+        }
+    }
+
+    private fun showPastReminderToast() {
+        showToast(
+            app.applicationContext.getString(R.string.reminder_cannot_be_in_the_past)
+        )
+    }
+
+    private fun rescheduleAllNotifications() {
+        viewModelScope.launch {
+            val notes = mainRepository.getAllNotes().firstOrNull() ?: emptyList()
+            notes.forEach { note ->
                 note.reminder?.let { reminder ->
                     if (reminder.isAfter(LocalDateTime.now())) {
                         showNotification(note)
-                    } else {
-                        Toast.makeText(
-                            app.applicationContext,
-                            app.applicationContext.getString(R.string.reminder_cannot_be_in_the_past),
-                            Toast.LENGTH_SHORT
-                        ).show()
                     }
                 }
-                fetchAllNotes()
-            } else {
+            }
+        }
+    }
 
+    fun onNotificationPermissionChanged(isGranted: Boolean) {
+        viewModelScope.launch {
+            if (isGranted) {
+                createNotificationChannel()
+                rescheduleAllNotifications()
             }
         }
     }
@@ -222,12 +371,6 @@ class CalendarViewModel @Inject constructor(
                 _appState.update { it.copy(language = language) }
                 updateLocale(app.applicationContext, language)
             }
-        }
-    }
-
-    fun setLanguagePreference(language: String) {
-        viewModelScope.launch {
-            userPreferencesRepository.setLanguagePreference(language)
         }
     }
 
@@ -291,10 +434,6 @@ class CalendarViewModel @Inject constructor(
         }
     }
 
-    fun getAllWorkPatterns(): List<WorkPattern> {
-        return getAllWorkPatterns(_appState.value.customWorkPatterns)
-    }
-
 
     private fun deleteNote(note: NoteEntity) {
         viewModelScope.launch {
@@ -326,12 +465,28 @@ class CalendarViewModel @Inject constructor(
         }
     }
 
-    private fun saveStartDate(date: LocalDate) {
+    private fun saveDate(date: LocalDate, dateKind: DateKind) {
         viewModelScope.launch {
-            userPreferencesRepository.saveStartDate(date)
-            _appState.update { it.copy(startDate = date) }
+            when (dateKind) {
+                DateKind.START_DATE -> {
+                    userPreferencesRepository.saveDate(date, DateKind.START_DATE)
+                    _appState.update { it.copy(startDate = date) }
+                }
+
+                DateKind.REMINDER_DATE -> {}
+                DateKind.VACATION_START_DATE -> {
+                    userPreferencesRepository.saveDate(date, DateKind.VACATION_START_DATE)
+                    _appState.update { it.copy(vacationStartDate = date) }
+                }
+
+                DateKind.VACATION_END_DATE -> {
+                    userPreferencesRepository.saveDate(date, DateKind.VACATION_END_DATE)
+                    _appState.update { it.copy(vacationEndDate = date) }
+                }
+            }
         }
     }
+
 
     private fun saveWorkPattern(pattern: WorkPattern) {
         viewModelScope.launch {
@@ -355,10 +510,26 @@ class CalendarViewModel @Inject constructor(
         }
     }
 
-    private fun getStartDate() {
+    private fun loadStartDate() {
         viewModelScope.launch {
             userPreferencesRepository.loadStartDate.collect { date ->
                 _appState.update { it.copy(startDate = date) }
+            }
+        }
+    }
+
+    private fun loadVacationStartDate() {
+        viewModelScope.launch {
+            userPreferencesRepository.loadVacationStartDate.collect { date ->
+                _appState.update { it.copy(vacationStartDate = date) }
+            }
+        }
+    }
+
+    private fun loadVacationEndDate() {
+        viewModelScope.launch {
+            userPreferencesRepository.loadVacationEndDate.collect { date ->
+                _appState.update { it.copy(vacationEndDate = date) }
             }
         }
     }
@@ -387,21 +558,6 @@ class CalendarViewModel @Inject constructor(
         }
     }
 
-    private fun saveCustomWorkPatterns(patterns: List<WorkPattern>) {
-        viewModelScope.launch {
-            userPreferencesRepository.saveCustomWorkPatterns(patterns)
-            _appState.update { it.copy(customWorkPatterns = patterns) }
-        }
-    }
-
-    private fun getCustomWorkPatterns() {
-        viewModelScope.launch {
-            userPreferencesRepository.loadCustomWorkPatterns.collect { customPatterns ->
-                _appState.update { it.copy(customWorkPatterns = customPatterns) }
-            }
-        }
-    }
-
     private fun saveAutostartInstructionsShown() {
         viewModelScope.launch {
             userPreferencesRepository.saveShowAutostartInstructions(true)
@@ -416,4 +572,31 @@ class CalendarViewModel @Inject constructor(
             }
         }
     }
+
+    private fun saveRequestExactAlarmPermission() {
+        viewModelScope.launch {
+            userPreferencesRepository.saveRequestExactAlarmPermission(true)
+            _appState.update { it.copy(isRequestExactAlarmPermissionDialogShown = true) }
+        }
+    }
+
+    private fun loadRequestExactAlarmPermission() {
+        viewModelScope.launch {
+            userPreferencesRepository.loadRequestExactAlarmPermission.collect { requestPermission ->
+                _appState.update { it.copy(isRequestExactAlarmPermissionDialogShown = requestPermission) }
+            }
+        }
+    }
+
+    private fun showToast(
+        message: String,
+    ) {
+        Toast.makeText(
+            app.applicationContext,
+            message,
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+
 }

@@ -2,6 +2,7 @@ package com.elshan.shiftnoc.presentation.components
 
 import android.content.Context
 import com.elshan.shiftnoc.R
+import com.elshan.shiftnoc.presentation.calendar.VacationDays
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -20,7 +21,6 @@ val defaultWorkPattern = WorkPattern(
     isCustom = false
 )
 
-
 enum class ShiftType(
     val stringResId: Int,
 ) {
@@ -28,6 +28,22 @@ enum class ShiftType(
     NIGHT(R.string.shift_night),
     OFF(R.string.shift_off)
 }
+
+enum class DayType(
+    val stringResId: Int,
+    val shiftType: ShiftType? = null,
+) {
+    WORK_MORNING(R.string.shift_morning, ShiftType.MORNING),
+    WORK_NIGHT(R.string.shift_night, ShiftType.NIGHT),
+    WORK_OFF(R.string.shift_off, ShiftType.OFF),
+    VACATION(R.string.day_vacation),
+    HOLIDAY(R.string.day_holiday)
+}
+
+fun getShiftType(dayType: DayType): ShiftType? {
+    return dayType.shiftType
+}
+
 
 val predefinedWorkPatterns = listOf(
     defaultWorkPattern,
@@ -73,3 +89,57 @@ fun getShiftType(date: LocalDate, workPattern: WorkPattern, startDate: LocalDate
         null
     }
 }
+
+fun getDayType(
+    date: LocalDate,
+    workPattern: WorkPattern,
+    startDate: LocalDate,
+    vacations: List<VacationDays>
+): DayType? {
+    // Check if the date is within any vacation range
+    vacations.forEach { vacation ->
+        if (date in vacation.startDate..vacation.endDate) {
+            return DayType.VACATION
+        }
+    }
+
+    // Continue with the existing logic for work patterns
+    if (workPattern.pattern.isEmpty()) {
+        return null // Return null if the pattern list is empty
+    }
+
+    val daysBetween = ChronoUnit.DAYS.between(startDate, date).toInt()
+    return if (daysBetween >= 0) {
+        val type = workPattern.pattern[daysBetween % workPattern.pattern.size]
+        when (type) {
+            ShiftType.MORNING -> DayType.WORK_MORNING
+            ShiftType.NIGHT -> DayType.WORK_NIGHT
+            ShiftType.OFF -> DayType.WORK_OFF
+        }
+    } else {
+        null
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

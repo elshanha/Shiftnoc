@@ -57,9 +57,11 @@ import androidx.compose.ui.window.PopupProperties
 import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
+import com.elshan.shiftnoc.presentation.calendar.VacationDialog
 import com.elshan.shiftnoc.presentation.components.ShiftType
 import com.elshan.shiftnoc.presentation.components.WorkPattern
 import com.elshan.shiftnoc.presentation.components.getName
+import com.elshan.shiftnoc.ui.theme.ShiftnocTheme
 import com.elshan.shiftnoc.util.DIALOGS
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 
@@ -73,6 +75,12 @@ fun WorkPatternManager(
 ) {
     if (appState.visibleDialogs.contains(DIALOGS.CUSTOM_WORK_PATTERN)) {
         CustomWorkPatternDialog(
+            appState = appState,
+            onEvent = onEvent
+        )
+    }
+    if (appState.visibleDialogs.contains(DIALOGS.VACATION_DIALOG)) {
+        VacationDialog(
             appState = appState,
             onEvent = onEvent
         )
@@ -91,7 +99,23 @@ fun WorkPatternManager(
         onDismissRequest = {
             onEvent(CalendarEvent.HideDialog(DIALOGS.WORK_PATTERN_MANAGER))
         },
-        confirmButton = { /*TODO*/ },
+        confirmButton = {
+            OutlinedButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = 0.dp,
+                        start = 12.dp,
+                        end = 12.dp,
+                        bottom = 0.dp
+                    ),
+                onClick = {
+                    onEvent(CalendarEvent.ShowDialog(DIALOGS.VACATION_DIALOG))
+                },
+            ) {
+                Text(stringResource(R.string.add_vacations))
+            }
+        },
         title = { Text(stringResource(R.string.select_work_pattern)) },
         text = {
             Column {
@@ -145,7 +169,12 @@ fun WorkPatternManager(
                         OutlinedButton(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(12.dp),
+                                .padding(
+                                    top = 12.dp,
+                                    start = 12.dp,
+                                    end = 12.dp,
+                                    bottom = 0.dp
+                                ),
                             onClick = {
                                 try {
                                     onEvent.apply {
@@ -204,7 +233,7 @@ fun PatternRow(
             }
         )
         Text(
-            text = if(pattern.isCustom) {
+            text = if (pattern.isCustom) {
                 pattern.name
             } else {
                 stringResource(pattern.nameResId)
@@ -304,7 +333,10 @@ fun CustomWorkPatternDialog(
                     Box {
                         Button(
                             onClick = { shiftTypeMenuExpanded = true }) {
-                            Text(stringResource(selectedShiftType.stringResId), style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                stringResource(selectedShiftType.stringResId),
+                                style = MaterialTheme.typography.bodySmall
+                            )
                         }
                         DropdownMenu(
                             modifier = Modifier
@@ -381,7 +413,7 @@ fun EditOrDeleteDialog(
         onDismissRequest = {
             onEvent(CalendarEvent.HideDialog(DIALOGS.EDIT_OR_DELETE_DIALOG))
         },
-        confirmButton = { /*TODO*/ },
+        confirmButton = {  },
         title = { Text(text = "Edit or Delete Pattern") },
         text = {
             Column {
@@ -412,8 +444,37 @@ fun EditOrDeleteDialog(
 
 @Preview
 @Composable
-fun PatternRowPreview() {
-
+fun WorkPatternManagerPreview() {
+    ShiftnocTheme {
+        WorkPatternManager(
+            selectedPattern = WorkPattern(
+                name = "Work Pattern",
+                pattern = listOf(ShiftType.MORNING, ShiftType.NIGHT)
+            ),
+            predefinedPatterns = listOf(
+                WorkPattern(
+                    name = "Work Pattern",
+                    pattern = listOf(ShiftType.OFF)
+                ),
+                WorkPattern(
+                    name = "Work Pattern 2",
+                    pattern = listOf(ShiftType.MORNING, ShiftType.NIGHT)
+                )
+            ),
+            customPatterns = listOf(
+                WorkPattern(
+                    name = "Work Pattern 3",
+                    pattern = listOf(ShiftType.MORNING, ShiftType.NIGHT)
+                ),
+                WorkPattern(
+                    name = "Work Pattern 4",
+                    pattern = listOf(ShiftType.MORNING, ShiftType.NIGHT)
+                )
+            ),
+            onEvent = {},
+            appState = AppState()
+        )
+    }
 }
 
 

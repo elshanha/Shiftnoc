@@ -6,14 +6,11 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarViewMonth
@@ -21,21 +18,14 @@ import androidx.compose.material.icons.outlined.CalendarViewWeek
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.EditCalendar
 import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.rounded.DeleteForever
-import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -51,8 +41,9 @@ import com.elshan.shiftnoc.presentation.components.CustomButton
 import com.elshan.shiftnoc.presentation.components.CustomDatePickerDialog
 import com.elshan.shiftnoc.presentation.components.predefinedWorkPatterns
 import com.elshan.shiftnoc.presentation.screen.calendar.WorkPatternManager
-import com.elshan.shiftnoc.util.CalendarView
+import com.elshan.shiftnoc.util.enums.CalendarView
 import com.elshan.shiftnoc.util.DIALOGS
+import com.elshan.shiftnoc.util.enums.DateKind
 import com.elshan.shiftnoc.util.horizontalWindowInsetsPadding
 import com.elshan.shiftnoc.util.verticalWindowInsetsPadding
 import java.time.LocalDate
@@ -232,7 +223,7 @@ fun ExpandedActions(
             defaultDay = appState.startDate ?: LocalDate.now(),
             onClose = { date ->
                 onEvent.apply {
-                    this(CalendarEvent.OnDateSelected(date))
+                    this(CalendarEvent.OnDateSelected(date, DateKind.START_DATE))
                     this(CalendarEvent.HideDialog(DIALOGS.SHOW_DAY_PICKER))
                 }
             }

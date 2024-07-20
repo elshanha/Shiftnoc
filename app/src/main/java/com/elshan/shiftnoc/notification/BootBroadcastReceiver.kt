@@ -23,14 +23,19 @@ class BootBroadcastReceiver : BroadcastReceiver() {
     lateinit var notificationsService: NotificationsService
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
+        if (intent?.action == Intent.ACTION_BOOT_COMPLETED ||
+            intent?.action == "android.intent.action.QUICKBOOT_POWERON" ||
+            intent?.action == "com.htc.intent.action.QUICKBOOT_POWERON") {
             context?.let {
-                rescheduleNotifications()
+                val pendingResult = goAsync()
+                rescheduleNotifications {
+                    pendingResult.finish()
+                }
             }
         }
     }
 
-    private fun rescheduleNotifications() {
+    private fun rescheduleNotifications(completion: () -> Unit) {
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
             val notes = mainRepository.getAllNotes().firstOrNull() ?: emptyList()
@@ -41,6 +46,7 @@ class BootBroadcastReceiver : BroadcastReceiver() {
                     }
                 }
             }
+            completion()
         }
     }
 }

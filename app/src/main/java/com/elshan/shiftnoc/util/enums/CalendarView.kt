@@ -1,4 +1,4 @@
-package com.elshan.shiftnoc.util
+package com.elshan.shiftnoc.util.enums
 
 enum class CalendarView {
     WEEKLY,

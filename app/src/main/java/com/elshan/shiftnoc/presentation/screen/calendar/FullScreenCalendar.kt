@@ -1,18 +1,10 @@
 package com.elshan.shiftnoc.presentation.screen.calendar
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,41 +17,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import com.elshan.shiftnoc.notification.RequestExactAlarmPermissionDialog
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.components.CustomMonthHeader
-import com.elshan.shiftnoc.presentation.components.DatePickerDayComponent
 import com.elshan.shiftnoc.presentation.components.Header
 import com.elshan.shiftnoc.presentation.components.MonthBody
 import com.elshan.shiftnoc.presentation.components.MonthHeader
-import com.elshan.shiftnoc.presentation.components.getShiftType
-import com.elshan.shiftnoc.presentation.datastore.UserPreferencesRepository
-import com.elshan.shiftnoc.presentation.main.components.ShowAutostartInstructionsDialogIfNeeded
+import com.elshan.shiftnoc.presentation.components.getDayType
 import com.elshan.shiftnoc.presentation.screen.calendar.components.ActionsSection
 import com.elshan.shiftnoc.presentation.screen.calendar.components.MonthDayComponent
 import com.elshan.shiftnoc.presentation.screen.calendar.week.WeeklyCalendar
 import com.elshan.shiftnoc.presentation.screen.note.AddEditNoteDialog
-import com.elshan.shiftnoc.util.CalendarView
+import com.elshan.shiftnoc.util.enums.CalendarView
 import com.elshan.shiftnoc.util.DIALOGS
 import com.elshan.shiftnoc.util.bottomWindowInsetsPadding
 import com.elshan.shiftnoc.util.displayText
 import com.elshan.shiftnoc.util.endWindowInsetsPadding
-import com.elshan.shiftnoc.util.rememberFirstVisibleMonthAfterScroll
 import com.elshan.shiftnoc.util.startWindowInsetsPadding
-import com.elshan.shiftnoc.util.updateLocale
 import com.kizitonwose.calendar.compose.ContentHeightMode
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.VerticalCalendar
@@ -69,7 +51,6 @@ import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.core.yearMonth
 import java.time.LocalDate
 import java.time.Year
-import java.time.format.TextStyle
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,8 +58,10 @@ import java.util.Locale
 fun FullScreenCalendar(
     onEvent: (CalendarEvent) -> Unit,
     appState: AppState,
-    navController: NavController
+    navController: NavController,
 ) {
+
+
     val selectedMonth by remember {
         derivedStateOf {
             appState.startDate?.yearMonth ?: LocalDate.now().yearMonth
@@ -107,6 +90,8 @@ fun FullScreenCalendar(
             onEvent = onEvent,
         )
     }
+
+
 
     Box(
         modifier = Modifier
@@ -161,17 +146,18 @@ fun FullScreenCalendar(
                         dayContent = { day ->
                             val shiftType = appState.startDate?.let {
                                 appState.selectedPattern?.let { pattern ->
-                                    getShiftType(
+                                    getDayType(
                                         date = day.date,
                                         workPattern = pattern,
-                                        startDate = it
+                                        startDate = it,
+                                        vacations = appState.vacations
                                     )
                                 }
                             }
 
                             MonthDayComponent(
                                 day = day,
-                                shiftType = shiftType,
+                                dayType = shiftType,
                                 appState = appState,
                                 onClick = {
                                     appState.selectedDate = day.date
@@ -235,17 +221,18 @@ fun FullScreenCalendar(
                     dayContent = { day ->
                         val shiftType = appState.startDate?.let {
                             appState.selectedPattern?.let { pattern ->
-                                getShiftType(
+                                getDayType(
                                     date = day.date,
                                     workPattern = pattern,
-                                    startDate = it
+                                    startDate = it,
+                                    vacations = appState.vacations
                                 )
                             }
                         }
 
                         MonthDayComponent(
                             day = day,
-                            shiftType = shiftType,
+                            dayType = shiftType,
                             appState = appState,
                             onClick = {
                                 appState.selectedDate = day.date

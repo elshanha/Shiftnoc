@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,12 +35,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.presentation.calendar.AppState
+import com.elshan.shiftnoc.presentation.calendar.ContinuousSelectionHelper.getSelection
+import com.elshan.shiftnoc.presentation.calendar.DateSelection
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
-import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
+import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.yearMonth
 import kotlinx.coroutines.launch
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -88,9 +90,12 @@ fun CustomDatePickerDialog(
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = stringResource(R.string.selected_date), style = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.onPrimary
-                    ))
+                    Text(
+                        text = stringResource(R.string.selected_date),
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    )
                     Text(
                         text = selectedDay.format(dtf),
                         style = MaterialTheme.typography.bodyLarge.copy(
@@ -156,34 +161,39 @@ fun CustomDatePickerDialog(
                                 day,
                                 selected = selectedDay == day.date,
                                 isDatePicker = true,
-                                indicator = false
-                            ) {
-                                selectedDay = it
-                            }
+                                indicator = false,
+                                onClick = {
+                                    selectedDay = it
+                                }
+                            )
                         },
                         monthHeader = { month ->
                             val daysOfWeek = month.weekDays.first().map { it.date.dayOfWeek }
                             Header(daysOfWeek = daysOfWeek)
                         }
                     )
-                    Text(
+                    Row(
                         modifier = Modifier
-                            .padding(16.dp, 8.dp)
-                            .clickable {
-                                onClose(selectedDay)
-                            }
-                            .align(Alignment.End),
-                        text = "Done",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .padding(16.dp, 8.dp)
+                                .clickable {
+                                    onClose(selectedDay)
+                                },
+                            text = stringResource(R.string.done),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
 
             }
         }
     }
 }
-
 
 @Preview
 @Composable

@@ -60,6 +60,21 @@
     <string name="pattern_2days_work_2days_off">2 days work, 2 days off</string>
     <string name="pattern_1day_work_2days_off">1 day work, 2 days off</string>
     <string name="dismiss">Dismiss</string>
+    <string name="day_vacation">Vacation</string>
+    <string name="day_holiday">Holiday</string>
+    <string name="add_vacations">Add Vacations</string>
+    <string name="permission_required">Permission Required</string>
+    <string name="please_grant_the_permission_in_the_settings">Please grant the permission in the settings.</string>
+    <string name="open_settings">Open Settings</string>
+    <string name="unable_to_open_settings">Unable to open settings</string>
+    <string name="please_allow">Please allow</string>
+    <string name="this_app_needs_the_exact_alarm_permission_to_send_reminders_at_the_exact_time_please_grant_the_permission_in_the_settings">This app needs the exact alarm permission to send reminders at the exact time. Please grant the permission in the settings.</string>
+    <string name="select_your_vacations">Select your vacations</string>
+    <string name="start_date">Start Date</string>
+    <string name="end_date">End Date</string>
+    <string name="vacation_end_date_must_be_after_vacation_start_date">Vacation end date must be after vacation start date</string>
+    <string name="vacation_deleted">Vacation deleted</string>
+    <string name="max_vacations_reached">Max vacations reached</string>
     />
 
 </resources>

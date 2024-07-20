@@ -1,5 +1,11 @@
 package com.elshan.shiftnoc.presentation.screen.note
 
+import android.app.AlarmManager
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -44,17 +50,22 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -65,16 +76,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
 import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.data.local.NoteEntity
+import com.elshan.shiftnoc.notification.NotificationsService
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.components.ColorPicker
 import com.elshan.shiftnoc.presentation.components.CustomTimeDialog
 import com.elshan.shiftnoc.util.DIALOGS
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import javax.inject.Inject
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -91,9 +107,7 @@ fun AddEditNoteDialog(
     val existingNotes = appState.notes[date] ?: emptyList()
     val maxNotesReached = existingNotes.size >= 3
 
-
     val targetModifier = if (appState.isFullScreen) Modifier.fillMaxSize() else Modifier
-
 
     AlertDialog(
         properties = DialogProperties(
@@ -262,7 +276,7 @@ fun AddEditNoteDialog(
                         onEvent(CalendarEvent.HideDialog(DIALOGS.COLOR_PICKER))
                     }
                 },
-                enabled = selectedNote != null || !maxNotesReached
+                enabled = (selectedNote != null || !maxNotesReached)
             ) {
                 Text(stringResource(R.string.save))
             }
@@ -285,6 +299,12 @@ private fun NoteDialogTitle(
     onEvent: (CalendarEvent) -> Unit,
     appState: AppState
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val alarmManager = context.getSystemService(AlarmManager::class.java)
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
     val note = appState.notes.getOrDefault(appState.selectedDate, emptyList())
         .find { it.id == selectedNote?.id }
     Row(
@@ -299,9 +319,48 @@ private fun NoteDialogTitle(
             )
         )
         Spacer(modifier = Modifier.weight(1f))
-        IconButton(onClick = {
-            onEvent(CalendarEvent.ToggleDialog(DIALOGS.TIME_PICKER))
-        }) {
+        IconButton(
+            onClick = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (alarmManager.canScheduleExactAlarms()) {
+                        onEvent(CalendarEvent.ToggleDialog(DIALOGS.TIME_PICKER))
+                    } else {
+                        onEvent(
+                            CalendarEvent.ShowSnackBar(
+                                message = context.getString(R.string.please_grant_the_permission_in_the_settings),
+                                actionLabel = context.getString(R.string.settings),
+                                duration = SnackbarDuration.Short,
+                                onAction = {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                        val intent =
+                                            Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                                                putExtra(
+                                                    Settings.EXTRA_APP_PACKAGE,
+                                                    context.packageName
+                                                )
+                                            }
+                                        context.startActivity(intent)
+                                        scope.launch {
+                                            delay(1000)
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.please_allow),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                }
+                            )
+                        )
+                    }
+                } else {
+                    onEvent(CalendarEvent.ToggleDialog(DIALOGS.TIME_PICKER))
+                }
+                keyboardController?.hide()
+                focusManager.clearFocus()
+            },
+
+            ) {
             Icon(
                 imageVector = Icons.Default.Timer,
                 tint = MaterialTheme.colorScheme.primary,
@@ -311,6 +370,8 @@ private fun NoteDialogTitle(
 
         IconButton(onClick = {
             onEvent(CalendarEvent.ToggleDialog(DIALOGS.COLOR_PICKER))
+            keyboardController?.hide()
+            focusManager.clearFocus()
         }) {
             Box(
                 modifier = Modifier
@@ -324,6 +385,8 @@ private fun NoteDialogTitle(
 
         IconButton(onClick = {
             onEvent(CalendarEvent.ToggleFullScreen)
+            keyboardController?.hide()
+            focusManager.clearFocus()
         }) {
             Icon(
                 imageVector = if (appState.isFullScreen) Icons.Default.CloseFullscreen else Icons.Outlined.OpenInFull,

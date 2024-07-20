@@ -64,4 +64,21 @@
     <string name="pattern_2days_work_2days_off">2 gün iş, 2 gün ev</string>
     <string name="pattern_1day_work_2days_off">1 gün iş, 2 gün ev</string>
     <string name="dismiss">Ləğv et</string>
+    <string name="day_vacation">Məzuniyyət</string>
+    <string name="day_holiday">Bayram</string>
+    <string name="add_vacations">Məzuniyyətləri əlavə et</string>
+    <string name="permission_required">İcazə tələb olunur</string>
+    <string name="please_grant_the_permission_in_the_settings">Zəhmət olmasa parametrlərdən icazəni təmin edin.</string>
+    <string name="open_settings">Parametrləri aç</string>
+    <string name="unable_to_open_settings">Parametrləri açmaq mümkün olmadı</string>
+    <string name="please_allow">Zəhmət olmasa icazəni təmin edin.</string>
+    <string name="this_app_needs_the_exact_alarm_permission_to_send_reminders_at_the_exact_time_please_grant_the_permission_in_the_settings">
+        Tətbiqin dəqiq vaxtda xatırlatma göndərməyi üçün zəhmət olmasa parametrlərdən icazəni təmin edin.
+    </string>
+    <string name="select_your_vacations">Məzuniyyətini seç</string>
+    <string name="start_date">Başlanma Tarixi</string>
+    <string name="end_date">Bitmə Tarixi</string>
+    <string name="vacation_end_date_must_be_after_vacation_start_date">Məzuniyyətin bitmə tarixi başlanma tarixindən sonra olmalıdır</string>
+    <string name="vacation_deleted">Məzuniyyət silindi</string>
+    <string name="max_vacations_reached">Məzuniyyət limitinə çatdınız</string>
 </resources>

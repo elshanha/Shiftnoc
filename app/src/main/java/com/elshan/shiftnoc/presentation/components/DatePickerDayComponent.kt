@@ -29,7 +29,7 @@ fun DatePickerDayComponent(
     selected: Boolean,
     indicator: Boolean = true,
     isDatePicker: Boolean = false,
-    onClick: (LocalDate) -> Unit = {}
+    onClick: (LocalDate) -> Unit = {},
 ) {
 
     if (day.position != DayPosition.MonthDate) {
@@ -60,7 +60,9 @@ fun DatePickerDayComponent(
                 MaterialTheme.colorScheme.primary,
                 RoundedCornerShape(8.dp)
             )
-            .clickable { onClick(day.date) },
+            .clickable { onClick(day.date) }
+
+        ,
         contentAlignment = Alignment.Center
     ) {
         Column(

@@ -11,20 +11,57 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
+import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.util.DIALOGS
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun RequestExactAlarmPermissionDialog(
     onEvent: (CalendarEvent) -> Unit,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    fun event() {
+        onEvent(
+            CalendarEvent.ShowSnackBar(
+                message = context.getString(R.string.please_grant_the_permission_in_the_settings),
+                actionLabel = context.getString(R.string.settings),
+                duration = SnackbarDuration.Short,
+                onAction = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        val intent =
+                            Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                                putExtra(
+                                    Settings.EXTRA_APP_PACKAGE,
+                                    context.packageName
+                                )
+                            }
+                        context.startActivity(intent)
+                        scope.launch {
+                            delay(1000)
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.please_allow),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            )
+        )
+    }
 
     AlertDialog(
         containerColor = MaterialTheme.colorScheme.onPrimary,
@@ -32,16 +69,17 @@ fun RequestExactAlarmPermissionDialog(
         textContentColor = MaterialTheme.colorScheme.primary,
         onDismissRequest = {
             onEvent(CalendarEvent.HideDialog(DIALOGS.REQUEST_EXACT_ALARM_PERMISSION))
-            Toast.makeText(
-                context,
-                "Please grant the permission in the settings.",
-                Toast.LENGTH_LONG
-            ).show()
+            event()
         },
-        title = { Text("Permission Required", style = MaterialTheme.typography.headlineSmall) },
+        title = {
+            Text(
+                stringResource(R.string.permission_required),
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
         text = {
             Text(
-                "This app needs the exact alarm permission to send reminders at the exact time. Please grant the permission in the settings.",
+                stringResource(R.string.this_app_needs_the_exact_alarm_permission_to_send_reminders_at_the_exact_time_please_grant_the_permission_in_the_settings),
                 style = MaterialTheme.typography.bodyMedium
             )
         },
@@ -58,6 +96,14 @@ fun RequestExactAlarmPermissionDialog(
                                     )
                                 }
                             context.startActivity(intent)
+                            scope.launch {
+                                delay(1000)
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.please_allow),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         } else {
                             val intent =
                                 Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
@@ -66,25 +112,23 @@ fun RequestExactAlarmPermissionDialog(
                     } catch (e: Exception) {
                         Toast.makeText(
                             context,
-                            "Unable to open settings",
+                            context.getString(R.string.unable_to_open_settings),
                             Toast.LENGTH_LONG
                         ).show()
                     }
                     onEvent(CalendarEvent.HideDialog(DIALOGS.REQUEST_EXACT_ALARM_PERMISSION))
+                    onEvent(CalendarEvent.SetRequestExactAlarmPermission)
                 }) {
-                Text("Open Settings")
+                Text(stringResource(R.string.open_settings))
             }
         },
         dismissButton = {
             TextButton(onClick = {
                 onEvent(CalendarEvent.HideDialog(DIALOGS.REQUEST_EXACT_ALARM_PERMISSION))
-                Toast.makeText(
-                    context,
-                    "Please grant the permission in the settings.",
-                    Toast.LENGTH_LONG
-                ).show()
+                event()
+                onEvent(CalendarEvent.SetRequestExactAlarmPermission)
             }) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

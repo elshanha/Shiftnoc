@@ -1,11 +1,8 @@
 package com.elshan.shiftnoc.presentation.screen.settings
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,20 +16,14 @@ import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalBottomSheetDefaults
-import androidx.compose.material3.ModalBottomSheetProperties
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,18 +33,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.elshan.shiftnoc.R
-import com.elshan.shiftnoc.navigation.Screen
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
-import com.elshan.shiftnoc.presentation.datastore.UserPreferencesRepository
 import com.elshan.shiftnoc.presentation.screen.settings.components.CalendarViewSelector
 import com.elshan.shiftnoc.presentation.screen.settings.components.LanguageSelector
 import com.elshan.shiftnoc.presentation.screen.settings.components.SettingsComponent
 import com.elshan.shiftnoc.presentation.screen.settings.components.SettingsItem
 import com.elshan.shiftnoc.presentation.screen.settings.components.WeekSelectorDialog
-import com.elshan.shiftnoc.util.CalendarView
-import com.elshan.shiftnoc.util.DIALOGS
-import com.elshan.shiftnoc.util.Languages
 import com.elshan.shiftnoc.util.updateLocale
 
 @OptIn(ExperimentalMaterial3Api::class)

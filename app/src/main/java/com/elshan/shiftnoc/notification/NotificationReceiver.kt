@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -24,20 +25,13 @@ class AlarmReceiver : BroadcastReceiver() {
         val content = intent.getStringExtra("content") ?: return
 
         sendNotification(context, noteId, content)
+
+        Log.d("AlarmReceiver", "onReceive: ${noteId.hashCode()}")
+        Log.d("AlarmReceiver", "onReceive: $content")
+
     }
 
     private fun sendNotification(context: Context, noteId: Long, content: String) {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.d("Notification", "POST_NOTIFICATIONS permission not granted")
-                return
-            }
-        }
 
         val notificationManager = NotificationManagerCompat.from(context)
         val notificationId = noteId.hashCode()
@@ -50,10 +44,6 @@ class AlarmReceiver : BroadcastReceiver() {
             addNextIntentWithParentStack(notificationIntent)
             getPendingIntent(0, PendingIntent.FLAG_IMMUTABLE)
         }
-
-        val soundUri =
-            Uri.parse("android.resource://${context.packageName}/${R.raw.sms_notification}")
-        Log.d("NotificationSound", "Sound URI: $soundUri")
 
         val dismissIntent = Intent(context, NotificationDismissReceiver::class.java).apply {
             putExtra("notification_id", notificationId)
