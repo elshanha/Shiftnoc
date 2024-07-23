@@ -16,8 +16,15 @@ import androidx.compose.animation.core.animateSizeAsState
 import androidx.compose.animation.core.animateValueAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -113,12 +120,7 @@ fun AddEditNoteDialog(
         properties = DialogProperties(
             usePlatformDefaultWidth = !appState.isFullScreen
         ),
-        modifier = targetModifier.animateContentSize(
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioLowBouncy,
-                stiffness = Spring.StiffnessHigh
-            )
-        ),
+        modifier = targetModifier,
         containerColor = MaterialTheme.colorScheme.secondaryContainer,
         onDismissRequest = {
             onEvent(CalendarEvent.HideDialog(DIALOGS.ADD_EDIT_NOTE))
@@ -135,15 +137,15 @@ fun AddEditNoteDialog(
                     enter = slideInHorizontally(
                         initialOffsetX = { it },
                         animationSpec = spring(
-                            dampingRatio = 0.9f,
-                            stiffness = 500f
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessMedium
                         )
                     ),
                     exit = slideOutHorizontally(
                         targetOffsetX = { it * -2 },
                         animationSpec = spring(
-                            dampingRatio = 0.9f,
-                            stiffness = 500f
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessMedium
                         )
                     )
                 ) {
@@ -159,18 +161,16 @@ fun AddEditNoteDialog(
 
                 AnimatedVisibility(
                     visible = appState.visibleDialogs.contains(DIALOGS.TIME_PICKER),
-                    enter = slideInHorizontally(
-                        initialOffsetX = { it },
+                    enter = slideInVertically() + scaleIn(
                         animationSpec = spring(
-                            dampingRatio = 0.9f,
-                            stiffness = 500f
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessMedium
                         )
                     ),
-                    exit = slideOutHorizontally(
-                        targetOffsetX = { it * -2 },
+                    exit = slideOutVertically() + fadeOut(
                         animationSpec = spring(
-                            dampingRatio = 0.9f,
-                            stiffness = 500f
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessMediumLow
                         )
                     )
                 ) {

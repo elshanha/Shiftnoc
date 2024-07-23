@@ -60,12 +60,7 @@ fun VacationDialog(
 
     val context = LocalContext.current
     AlertDialog(
-        modifier = targetModifier.animateContentSize(
-            animationSpec = spring(
-                dampingRatio = DampingRatioLowBouncy,
-                stiffness = StiffnessHigh
-            )
-        ),
+        modifier = targetModifier,
         properties = DialogProperties(
             usePlatformDefaultWidth = !appState.visibleDialogs.contains(DIALOGS.VACATION_DATE_DIALOG),
             dismissOnBackPress = true,
@@ -179,10 +174,11 @@ fun VacationDialog(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "${vacation.endDate.toEpochDay() - vacation.startDate.toEpochDay()}",
-                                    style = MaterialTheme.typography.bodyLarge.copy(
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    ),
+                                    text = "${
+                                        vacation.endDate.plusDays(+1)
+                                            .toEpochDay() - vacation.startDate.toEpochDay()
+                                    }",
+                                    style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onPrimary),
                                 )
                             }
                             IconButton(onClick = {

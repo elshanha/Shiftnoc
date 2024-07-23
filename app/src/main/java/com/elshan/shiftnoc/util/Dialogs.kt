@@ -17,5 +17,6 @@ object DIALOGS {
     const val REQUEST_EXACT_ALARM_PERMISSION = "requestExactAlarmPermission"
     const val VACATION_DIALOG = "vacationDialog"
     const val VACATION_DATE_DIALOG = "vacationDateDialog"
+    const val SHOW_BOTTOM_SHEET = "bottomSheetDialog"
 }
 

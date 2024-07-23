@@ -36,6 +36,7 @@ import com.elshan.shiftnoc.presentation.screen.calendar.components.ActionsSectio
 import com.elshan.shiftnoc.presentation.screen.calendar.components.MonthDayComponent
 import com.elshan.shiftnoc.presentation.screen.calendar.week.WeeklyCalendar
 import com.elshan.shiftnoc.presentation.screen.note.AddEditNoteDialog
+import com.elshan.shiftnoc.presentation.screen.note.AddNoteBottomSheet
 import com.elshan.shiftnoc.util.enums.CalendarView
 import com.elshan.shiftnoc.util.DIALOGS
 import com.elshan.shiftnoc.util.bottomWindowInsetsPadding
@@ -91,6 +92,12 @@ fun FullScreenCalendar(
         )
     }
 
+    if (appState.visibleDialogs.contains(DIALOGS.SHOW_BOTTOM_SHEET)) {
+        AddNoteBottomSheet(
+            onEvent = onEvent,
+            appState = appState
+        )
+    }
 
 
     Box(
@@ -238,7 +245,7 @@ fun FullScreenCalendar(
                                 appState.selectedDate = day.date
                                 onEvent(
                                     CalendarEvent.ShowDialog(
-                                        DIALOGS.ADD_EDIT_NOTE
+                                        DIALOGS.SHOW_BOTTOM_SHEET
                                     )
                                 )
                             }
