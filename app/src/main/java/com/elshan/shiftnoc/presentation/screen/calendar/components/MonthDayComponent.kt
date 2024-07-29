@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.elshan.shiftnoc.data.local.NoteEntity
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.components.DayType
+import com.elshan.shiftnoc.presentation.screen.settings.components.toColor
 import com.elshan.shiftnoc.util.enums.CalendarView
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.DayPosition
@@ -44,11 +45,21 @@ fun MonthDayComponent(
     }
 
     val backgroundColor = when (dayType) {
-        DayType.WORK_MORNING -> MaterialTheme.colorScheme.primary
-        DayType.WORK_NIGHT -> MaterialTheme.colorScheme.secondary
-        DayType.WORK_OFF -> Color.Transparent
-        DayType.VACATION -> MaterialTheme.colorScheme.tertiary
-        DayType.HOLIDAY -> MaterialTheme.colorScheme.onBackground
+        DayType.WORK_MORNING -> appState.selectedDayColor[DayType.WORK_MORNING]?.toColor()
+            ?: MaterialTheme.colorScheme.primary
+
+        DayType.WORK_NIGHT -> appState.selectedDayColor[DayType.WORK_NIGHT]?.toColor()
+            ?: MaterialTheme.colorScheme.secondary
+
+        DayType.WORK_OFF -> appState.selectedDayColor[DayType.WORK_OFF]?.toColor()
+            ?: Color.Transparent
+
+        DayType.VACATION -> appState.selectedDayColor[DayType.VACATION]?.toColor()
+            ?: MaterialTheme.colorScheme.tertiary
+
+        DayType.HOLIDAY -> appState.selectedDayColor[DayType.HOLIDAY]?.toColor()
+            ?: MaterialTheme.colorScheme.onBackground
+
         null -> Color.Transparent // Default for no shift type
     }
 

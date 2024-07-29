@@ -81,4 +81,6 @@
     <string name="vacation_end_date_must_be_after_vacation_start_date">Məzuniyyətin bitmə tarixi başlanma tarixindən sonra olmalıdır</string>
     <string name="vacation_deleted">Məzuniyyət silindi</string>
     <string name="max_vacations_reached">Məzuniyyət limitinə çatdınız</string>
+    <string name="colors_reset">Rənglər sıfırlandı</string>
+    <string name="reset">Sıfırla</string>
 </resources>

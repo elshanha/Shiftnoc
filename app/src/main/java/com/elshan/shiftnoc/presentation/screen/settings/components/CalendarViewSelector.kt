@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -22,12 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.elshan.shiftnoc.R
+import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.util.enums.CalendarView
 
 @Composable
 fun CalendarViewSelector(
     selectedCalendarView: CalendarView,
-    onSelect: (CalendarView) -> Unit
+    onEvent: (CalendarEvent) -> Unit
 ) {
     var selectedView by remember { mutableStateOf(selectedCalendarView) }
 
@@ -36,6 +39,10 @@ fun CalendarViewSelector(
             text = stringResource(R.string.calendar_view),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary,
+        )
+        HorizontalDivider(
+            thickness = 2.dp,
+            modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
         )
         Spacer(modifier = Modifier.height(8.dp))
         Column(Modifier.verticalScroll(rememberScrollState())) {
@@ -48,7 +55,7 @@ fun CalendarViewSelector(
                         selected = selectedView == calendarView,
                         onClick = {
                             selectedView = calendarView
-                            onSelect(selectedView)
+                            onEvent(CalendarEvent.OnCalendarViewChanged(selectedView))
                         },
                         colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
                     )

@@ -38,7 +38,7 @@ fun CustomSnackbar(
                 elevation = 8.dp,
                 shape = MaterialTheme.shapes.small
             )
-            .background(brush)
+            .background(MaterialTheme.colorScheme.primary)
     ) {
         Row(
             modifier = Modifier

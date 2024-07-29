@@ -76,6 +76,8 @@
     <string name="vacation_end_date_must_be_after_vacation_start_date">Vacation end date must be after vacation start date</string>
     <string name="vacation_deleted">Vacation deleted</string>
     <string name="max_vacations_reached">Max vacations reached</string>
+    <string name="colors_reset">Colors reset</string>
+    <string name="reset">Reset</string>
 
 
     />

@@ -2,11 +2,13 @@ package com.elshan.shiftnoc.presentation.datastore
 
 import android.content.Context
 import android.util.Log
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.elshan.shiftnoc.presentation.calendar.VacationDays
+import com.elshan.shiftnoc.presentation.components.DayType
 import com.elshan.shiftnoc.presentation.components.ShiftType
 import com.elshan.shiftnoc.presentation.components.WorkPattern
 import com.elshan.shiftnoc.presentation.components.defaultWorkPattern
@@ -27,9 +29,11 @@ import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.io.IOException
 import java.lang.reflect.Type
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -51,7 +55,7 @@ object PreferencesKeys {
     val SHOW_AUTOSTART_INSTRUCTIONS = booleanPreferencesKey("show_autostart_instructions")
     val REQUEST_EXACT_ALARM_PERMISSION = booleanPreferencesKey("request_exact_alarm_permission")
     val VACATIONS = stringPreferencesKey("vacations")
-}
+    val DAY_COLORS = stringPreferencesKey("day_colors") }
 
 class UserPreferencesRepository(context: Context) {
 
@@ -250,7 +254,45 @@ class UserPreferencesRepository(context: Context) {
             preferences[PreferencesKeys.REQUEST_EXACT_ALARM_PERMISSION] ?: false
         }
 
+    val userPreferencesFlow: Flow<UserPreferences> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                // Provide default preferences in case of an error
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            UserPreferences(
+                dayColors = preferences[PreferencesKeys.DAY_COLORS]?.let { json ->
+                    Gson().fromJson(json, object : TypeToken<Map<DayType, String>>() {}.type)
+                } ?: emptyMap()
+            )
+        }
+
+    suspend fun updateDayColor(dayType: DayType, color: String) {
+        val updatedColors = userPreferencesFlow.first().dayColors.toMutableMap()
+        updatedColors[dayType] = color
+
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DAY_COLORS] = Gson().toJson(updatedColors)
+        }
+    }
+
+    suspend fun resetDayColors(dayColors: Map<DayType, String>) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DAY_COLORS] = Gson().toJson(dayColors)
+        }
+    }
+
+
+    fun loadDayColors(): Flow<Map<DayType, String>> = userPreferencesFlow.map { it.dayColors }
+
 }
+
+data class UserPreferences(
+    val dayColors: Map<DayType, String> = emptyMap()
+)
 
 object ShiftTypeSerializer : JsonSerializer<ShiftType>, JsonDeserializer<ShiftType> {
     override fun serialize(

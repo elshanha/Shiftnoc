@@ -1,32 +1,25 @@
 package com.elshan.shiftnoc.notification
 
-import android.Manifest
 import android.app.PendingIntent
 import android.app.TaskStackBuilder
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
-import android.os.PowerManager
-import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
-import com.elshan.shiftnoc.presentation.main.MainActivity
 import com.elshan.shiftnoc.R
+import com.elshan.shiftnoc.presentation.main.MainActivity
 
 class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val noteId = intent.getLongExtra("noteId", 0L)
+        val noteId = intent.getLongExtra("noteId", -1)
         val content = intent.getStringExtra("content") ?: return
 
         sendNotification(context, noteId, content)
 
-        Log.d("AlarmReceiver", "onReceive: ${noteId.hashCode()}")
+        Log.d("AlarmReceiver", "onReceive: ${noteId.toInt()}")
         Log.d("AlarmReceiver", "onReceive: $content")
 
     }
@@ -34,7 +27,7 @@ class AlarmReceiver : BroadcastReceiver() {
     private fun sendNotification(context: Context, noteId: Long, content: String) {
 
         val notificationManager = NotificationManagerCompat.from(context)
-        val notificationId = noteId.hashCode()
+        val notificationId = noteId.toInt()
 
         val notificationIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

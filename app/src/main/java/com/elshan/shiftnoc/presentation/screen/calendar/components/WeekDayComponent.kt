@@ -24,7 +24,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.elshan.shiftnoc.presentation.calendar.AppState
+import com.elshan.shiftnoc.presentation.components.DayType
 import com.elshan.shiftnoc.presentation.components.ShiftType
+import com.elshan.shiftnoc.presentation.screen.settings.components.toColor
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.WeekDay
@@ -38,22 +40,36 @@ import java.util.Locale
 @Composable
 fun WeekDayComponent(
     day: WeekDay,
-    shiftType: ShiftType?,
+    dayType: DayType?,
     onClick: (WeekDay) -> Unit,
     appState: AppState
 ) {
 
-    val backgroundColor = when (shiftType) {
-        ShiftType.MORNING -> MaterialTheme.colorScheme.primary
-        ShiftType.NIGHT -> MaterialTheme.colorScheme.secondary
-        ShiftType.OFF -> Color.Transparent
+    val backgroundColor = when (dayType) {
+        DayType.WORK_MORNING -> appState.selectedDayColor[DayType.WORK_MORNING]?.toColor()
+            ?: MaterialTheme.colorScheme.primary
+
+        DayType.WORK_NIGHT -> appState.selectedDayColor[DayType.WORK_NIGHT]?.toColor()
+            ?: MaterialTheme.colorScheme.secondary
+
+        DayType.WORK_OFF -> appState.selectedDayColor[DayType.WORK_OFF]?.toColor()
+            ?: Color.Transparent
+
+        DayType.VACATION -> appState.selectedDayColor[DayType.VACATION]?.toColor()
+            ?: MaterialTheme.colorScheme.tertiary
+
+        DayType.HOLIDAY -> appState.selectedDayColor[DayType.HOLIDAY]?.toColor()
+            ?: MaterialTheme.colorScheme.onBackground
+
         null -> Color.Transparent // Default for no shift type
     }
 
-    val textColor = when (shiftType) {
-        ShiftType.MORNING -> MaterialTheme.colorScheme.background
-        ShiftType.NIGHT -> MaterialTheme.colorScheme.background
-        ShiftType.OFF -> MaterialTheme.colorScheme.secondary
+    val textColor = when (dayType) {
+        DayType.WORK_MORNING -> MaterialTheme.colorScheme.background
+        DayType.WORK_NIGHT -> MaterialTheme.colorScheme.background
+        DayType.WORK_OFF -> MaterialTheme.colorScheme.secondary
+        DayType.VACATION -> MaterialTheme.colorScheme.background
+        DayType.HOLIDAY -> MaterialTheme.colorScheme.background
         null -> MaterialTheme.colorScheme.secondary // Default for no shift type
     }
 

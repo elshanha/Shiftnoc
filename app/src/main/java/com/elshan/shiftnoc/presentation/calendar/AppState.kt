@@ -20,6 +20,13 @@ data class AppState(
     var vacationStartDate: LocalDate? = null,
     var vacationEndDate: LocalDate? = null,
     var selectedColor: String = "#FFFFFF",
+    var selectedDayColor: Map<DayType, String> = mapOf(
+        DayType.WORK_MORNING to "#A3C9FE",
+        DayType.WORK_NIGHT to "#E1E2E8",
+        DayType.WORK_OFF to "#00000000",
+        DayType.VACATION to "#FFC107",
+        DayType.HOLIDAY to "#00000000"
+    ),
     val startDate: LocalDate? = null,
     var firstDayOfWeek: DayOfWeek = DayOfWeek.MONDAY,
     val calendarView: CalendarView = CalendarView.VERTICAL_MONTHLY,

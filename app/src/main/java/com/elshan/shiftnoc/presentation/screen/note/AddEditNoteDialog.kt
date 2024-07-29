@@ -1,26 +1,17 @@
 package com.elshan.shiftnoc.presentation.screen.note
 
+import android.Manifest
 import android.app.AlarmManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.VisibilityThreshold
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateSizeAsState
-import androidx.compose.animation.core.animateValueAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -33,10 +24,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -51,7 +40,6 @@ import androidx.compose.material.icons.filled.CloseFullscreen
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -68,7 +56,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -86,7 +73,6 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.data.local.NoteEntity
-import com.elshan.shiftnoc.notification.NotificationsService
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.components.ColorPicker
@@ -97,7 +83,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import javax.inject.Inject
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -319,12 +304,21 @@ private fun NoteDialogTitle(
             )
         )
         Spacer(modifier = Modifier.weight(1f))
+
+
+
         IconButton(
             onClick = {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (alarmManager.canScheduleExactAlarms()) {
+                    if (alarmManager.canScheduleExactAlarms() &&
+                        PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    ) {
                         onEvent(CalendarEvent.ToggleDialog(DIALOGS.TIME_PICKER))
-                    } else {
+                    } else if (!alarmManager.canScheduleExactAlarms()) {
+                        onEvent(CalendarEvent.HideDialog(DIALOGS.ADD_EDIT_NOTE))
                         onEvent(
                             CalendarEvent.ShowSnackBar(
                                 message = context.getString(R.string.please_grant_the_permission_in_the_settings),
@@ -352,10 +346,36 @@ private fun NoteDialogTitle(
                                 }
                             )
                         )
+                    } else {
+                        onEvent(CalendarEvent.HideDialog(DIALOGS.ADD_EDIT_NOTE))
+                        onEvent(CalendarEvent.ShowSnackBar(
+                            message = context.getString(R.string.please_grant_the_permission_in_the_settings),
+                            actionLabel = context.getString(R.string.settings),
+                            duration = SnackbarDuration.Short,
+                            onAction = {
+                                val intent =
+                                    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                        putExtra(
+                                            Settings.EXTRA_APP_PACKAGE,
+                                            context.packageName
+                                        )
+                                    }
+                                context.startActivity(intent)
+                                scope.launch {
+                                    delay(1000)
+                                    onEvent(
+                                        CalendarEvent.ShowToast(
+                                            message = context.getString(R.string.please_allow),
+                                        )
+                                    )
+                                }
+                            }
+                        ))
                     }
                 } else {
                     onEvent(CalendarEvent.ToggleDialog(DIALOGS.TIME_PICKER))
                 }
+
                 keyboardController?.hide()
                 focusManager.clearFocus()
             },

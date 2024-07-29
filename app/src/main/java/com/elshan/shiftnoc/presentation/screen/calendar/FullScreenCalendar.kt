@@ -3,6 +3,8 @@ package com.elshan.shiftnoc.presentation.screen.calendar
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
@@ -19,6 +21,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,12 +65,7 @@ fun FullScreenCalendar(
     navController: NavController,
 ) {
 
-
-    val selectedMonth by remember {
-        derivedStateOf {
-            appState.startDate?.yearMonth ?: LocalDate.now().yearMonth
-        }
-    }
+    val selectedMonth = LocalDate.now().yearMonth
     val currentMonth = remember { selectedMonth }
     val startMonth = remember { currentMonth.minusMonths(50) }
     val endMonth = remember { currentMonth.plusMonths(200) }
@@ -92,13 +90,6 @@ fun FullScreenCalendar(
         )
     }
 
-    if (appState.visibleDialogs.contains(DIALOGS.SHOW_BOTTOM_SHEET)) {
-        AddNoteBottomSheet(
-            onEvent = onEvent,
-            appState = appState
-        )
-    }
-
 
     Box(
         modifier = Modifier
@@ -106,7 +97,6 @@ fun FullScreenCalendar(
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-
 
             AnimatedVisibility(
                 visible = appState.calendarView == CalendarView.HORIZONTAL_MONTHLY,
@@ -205,10 +195,8 @@ fun FullScreenCalendar(
 
             AnimatedVisibility(
                 visible = appState.calendarView == CalendarView.VERTICAL_MONTHLY,
-                enter = slideInVertically(
-                    initialOffsetY = { it / 2 },
+                enter = scaleIn(
                     animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
                         stiffness = Spring.StiffnessMedium
                     )
                 )
@@ -245,7 +233,7 @@ fun FullScreenCalendar(
                                 appState.selectedDate = day.date
                                 onEvent(
                                     CalendarEvent.ShowDialog(
-                                        DIALOGS.SHOW_BOTTOM_SHEET
+                                        DIALOGS.ADD_EDIT_NOTE
                                     )
                                 )
                             }
@@ -256,8 +244,6 @@ fun FullScreenCalendar(
                 )
             }
         }
-
-
 
         ActionsSection(
             navController = navController,

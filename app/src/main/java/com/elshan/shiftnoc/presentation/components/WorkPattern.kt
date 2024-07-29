@@ -32,6 +32,7 @@ enum class ShiftType(
 enum class DayType(
     val stringResId: Int,
     val shiftType: ShiftType? = null,
+    var color: String? = null  // I newly added this line
 ) {
     WORK_MORNING(R.string.shift_morning, ShiftType.MORNING),
     WORK_NIGHT(R.string.shift_night, ShiftType.NIGHT),

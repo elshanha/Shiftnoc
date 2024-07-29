@@ -33,7 +33,6 @@ import javax.inject.Inject
 
 const val NOTIFICATION_CHANNEL_ID = "CH-1"
 const val NOTIFICATION_CHANNEL_NAME = "Reminder"
-const val REQUEST_CODE = 200
 
 interface NotificationsService {
     suspend fun showNotification(note: NoteEntity, onPermissionError: () -> Unit = {})
@@ -62,7 +61,7 @@ class NotificationsServiceImpl @Inject constructor(
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            note.id.hashCode(),
+            note.id.toInt(),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -107,6 +106,7 @@ class NotificationsServiceImpl @Inject constructor(
             vibrationPattern = vibration
             setSound(soundUri, audioAttributes)
             lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            setShowBadge(true)
         }
 
         notificationManager.createNotificationChannel(notificationChannel)
@@ -116,12 +116,12 @@ class NotificationsServiceImpl @Inject constructor(
         val intent = Intent(context, AlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            note.id.hashCode(),
+            note.id.toInt(),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         alarmManager.cancel(pendingIntent)
-        notificationManager.cancel(note.id.hashCode())
+        notificationManager.cancel(note.id.toInt())
     }
 }
 

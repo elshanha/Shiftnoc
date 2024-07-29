@@ -19,6 +19,7 @@ import com.elshan.shiftnoc.notification.NotificationsService
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.calendar.VacationDays
+import com.elshan.shiftnoc.presentation.components.DayType
 import com.elshan.shiftnoc.presentation.components.ShiftType
 import com.elshan.shiftnoc.presentation.components.WorkPattern
 import com.elshan.shiftnoc.presentation.components.getAllWorkPatterns
@@ -79,6 +80,7 @@ class CalendarViewModel @Inject constructor(
         loadAutostartInstructionsShown()
         loadRequestExactAlarmPermission()
         loadVacations()
+        loadDayColors()
     }
 
     private fun fetchAllNotes() {
@@ -159,6 +161,8 @@ class CalendarViewModel @Inject constructor(
 
             is CalendarEvent.DeleteVacation -> deleteVacation(event.vacation)
             is CalendarEvent.ShowToast -> showToast(event.message)
+            is CalendarEvent.SaveDayColor -> saveDayColor(event.dayType, event.color)
+            is CalendarEvent.ResetDayColors -> resetDayColors()
         }
     }
 
@@ -587,6 +591,42 @@ class CalendarViewModel @Inject constructor(
             }
         }
     }
+
+    private fun saveDayColor(dayType: DayType, color: String) {
+        viewModelScope.launch {
+            userPreferencesRepository.updateDayColor(dayType, color)
+            val updatedColors = _appState.value.selectedDayColor.toMutableMap()
+            updatedColors[dayType] = color
+            _appState.update { it.copy(selectedDayColor = updatedColors) }
+        }
+    }
+
+    private fun loadDayColors() {
+        viewModelScope.launch {
+            userPreferencesRepository.loadDayColors().collect { dayColors ->
+                _appState.update { it.copy(selectedDayColor = dayColors) }
+            }
+        }
+    }
+
+    private fun resetDayColors() {
+        val defaultColors = mapOf(
+            DayType.WORK_MORNING to "#A3C9FE",
+            DayType.WORK_NIGHT to "#E1E2E8",
+            DayType.WORK_OFF to "#00000000",
+            DayType.VACATION to "#FFC107",
+            DayType.HOLIDAY to "#00000000"
+        )
+        viewModelScope.launch {
+            userPreferencesRepository.resetDayColors(defaultColors)
+            _appState.update {
+                it.copy(
+                    selectedDayColor = defaultColors
+                )
+            }
+        }
+    }
+
 
     private fun showToast(
         message: String,

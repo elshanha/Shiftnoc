@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -30,16 +31,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.screen.settings.components.CalendarViewSelector
+import com.elshan.shiftnoc.presentation.screen.settings.components.ColorsSelector
 import com.elshan.shiftnoc.presentation.screen.settings.components.LanguageSelector
 import com.elshan.shiftnoc.presentation.screen.settings.components.SettingsComponent
 import com.elshan.shiftnoc.presentation.screen.settings.components.SettingsItem
 import com.elshan.shiftnoc.presentation.screen.settings.components.WeekSelectorDialog
+import com.elshan.shiftnoc.util.enums.Languages
 import com.elshan.shiftnoc.util.updateLocale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,7 +57,6 @@ fun SettingsScreen(
 
     var showBottomSheetById by remember { mutableIntStateOf(0) }
     val sheetState = rememberModalBottomSheetState()
-
 
 
     val settingsGeneral = listOf(
@@ -77,6 +80,13 @@ fun SettingsScreen(
                 showBottomSheetById = R.string.calendar_view
             },
             icon = Icons.Outlined.CalendarMonth,
+        ),
+        SettingsItem(
+            title = stringResource(R.string.color_picker),
+            onClick = {
+                showBottomSheetById = R.string.color_picker
+            },
+            icon = Icons.Outlined.ColorLens,
         )
     )
 
@@ -104,6 +114,9 @@ fun SettingsScreen(
 
         if (showBottomSheetById != 0) {
             ModalBottomSheet(
+                dragHandle = {
+                    Box(modifier = Modifier.fillMaxWidth().padding(top = 16.dp))
+                },
                 onDismissRequest = {
                     showBottomSheetById = 0
                 },
@@ -121,16 +134,26 @@ fun SettingsScreen(
 
                         R.string.week_selector -> {
                             WeekSelectorDialog(dayOfWeek = appState.firstDayOfWeek) {
-                                onEvent(CalendarEvent.OnFirstDayOfWeekSelected(it))
+                                onEvent(it)
                                 showBottomSheetById = 0
                             }
                         }
 
                         R.string.calendar_view -> {
                             CalendarViewSelector(selectedCalendarView = appState.calendarView) {
-                                onEvent(CalendarEvent.OnCalendarViewChanged(it))
+                                onEvent(it)
                                 showBottomSheetById = 0
                             }
+                        }
+
+                        R.string.color_picker -> {
+                            ColorsSelector(
+                                selectedDayColors = appState.selectedDayColor,
+                                onEvent = {
+                                    onEvent(it)
+                                    showBottomSheetById = 0
+                                },
+                            )
                         }
                     }
                 }
@@ -156,4 +179,15 @@ fun SettingsScreen(
             }
         }
     }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenPreview() {
+    SettingsScreen(
+        onEvent = {},
+        appState = AppState(),
+        navController = NavController(LocalContext.current)
+    )
 }

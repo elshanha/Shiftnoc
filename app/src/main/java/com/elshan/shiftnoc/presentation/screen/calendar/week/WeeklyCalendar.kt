@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.calendar.AppState
+import com.elshan.shiftnoc.presentation.components.getDayType
 import com.elshan.shiftnoc.presentation.components.getShiftType
 import com.elshan.shiftnoc.presentation.screen.calendar.components.WeekDayComponent
 import com.elshan.shiftnoc.util.DIALOGS
@@ -32,23 +33,23 @@ fun WeeklyCalendar(
         state = weekState,
         modifier = Modifier
             .fillMaxSize()
-
         ,
         dayContent = { day ->
 
             val shiftType = appState.startDate?.let {
                 appState.selectedPattern?.let { pattern ->
-                    getShiftType(
+                    getDayType(
                         date = day.date,
                         workPattern = pattern,
-                        startDate = it
+                        startDate = it,
+                        vacations = appState.vacations
                     )
                 }
             }
 
             WeekDayComponent(
                 day = day,
-                shiftType = shiftType,
+                dayType = shiftType,
                 appState = appState,
                 onClick = {
                     appState.selectedDate = day.date

@@ -32,10 +32,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,7 +46,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -53,7 +58,11 @@ import androidx.compose.ui.window.DialogProperties
 import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
+import com.elshan.shiftnoc.presentation.screen.settings.components.toColor
 import com.elshan.shiftnoc.util.DIALOGS
+import com.github.skydoves.colorpicker.compose.AlphaSlider
+import com.github.skydoves.colorpicker.compose.AlphaTile
+import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
@@ -79,8 +88,8 @@ fun ColorPicker(
                 }
                 onEvent(CalendarEvent.HideDialog(DIALOGS.ROUNDED_COLOR_PICKER))
             },
-            appState = appState,
-            onEvent = onEvent
+            onEvent = onEvent,
+            initialColor = appState.selectedColor.toColor()
         )
     }
 
@@ -155,9 +164,9 @@ fun ColorPicker(
 
 @Composable
 fun ColorPickerDialog(
-    appState: AppState,
     onEvent: (CalendarEvent) -> Unit,
-    onColorSelected: (ColorEnvelope) -> Unit
+    onColorSelected: (ColorEnvelope) -> Unit,
+    initialColor: Color = Color.Transparent
 ) {
     val controller = rememberColorPickerController()
     var selectedColorEnvelope by remember { mutableStateOf<ColorEnvelope?>(null) }
@@ -183,23 +192,40 @@ fun ColorPickerDialog(
                         .fillMaxWidth()
                         .height(200.dp),
                     controller = controller,
+                    initialColor = initialColor,
                     onColorChanged = { colorEnvelope ->
                         selectedColorEnvelope = colorEnvelope
                     }
                 )
 
-                Box(
+                AlphaSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .height(25.dp),
+                    controller = controller,
+                    wheelRadius = 10.dp
+                )
+
+                BrightnessSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 0.dp, bottom = 10.dp, start = 10.dp, end = 10.dp)
+                        .height(25.dp),
+                    controller = controller,
+                    wheelRadius = 10.dp
+                )
+
+                AlphaTile(
                     modifier = Modifier
                         .size(42.dp)
-                        .background(
-                            color = selectedColorEnvelope?.toColor() ?: Color.Transparent,
-                            CircleShape
-                        )
+                        .clip(CircleShape),
+                    controller = controller
                 )
             }
         },
         confirmButton = {
-            Button(onClick = {
+            OutlinedButton(onClick = {
                 selectedColorEnvelope?.let {
                     onColorSelected(it)
                     onEvent(CalendarEvent.HideDialog(DIALOGS.ROUNDED_COLOR_PICKER))
@@ -209,7 +235,7 @@ fun ColorPickerDialog(
             }
         },
         dismissButton = {
-            Button(onClick = {
+            TextButton(onClick = {
                 onEvent(CalendarEvent.HideDialog(DIALOGS.ROUNDED_COLOR_PICKER))
             }) {
                 Text(stringResource(R.string.cancel))
