@@ -53,9 +53,6 @@ Play store link: https://play.google.com/store/apps/details?id=com.elshan.shiftn
 - **Internationalization**
   - Support for multiple languages (English and Azerbaijani).
 
-- **Other Libraries**
-  - TaskStackBuilder: For creating back stack for activities.
-  - PendingIntent: For handling pending intents.
 
 ## Screenshots
 
