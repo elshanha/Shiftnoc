@@ -2,6 +2,8 @@
 
 Shiftnoc is a comprehensive tool designed to help users manage their work patterns, shifts, and calendar events efficiently. This app supports multiple languages, customizable work patterns, and various calendar views to cater to different scheduling needs.
 
+Play store link: https://play.google.com/store/apps/details?id=com.elshan.shiftnoc
+
 ## Features
 
 - **Work Patterns Management**
