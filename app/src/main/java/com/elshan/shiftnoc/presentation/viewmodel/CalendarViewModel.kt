@@ -14,18 +14,17 @@ import androidx.lifecycle.viewModelScope
 import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.data.local.NoteEntity
 import com.elshan.shiftnoc.domain.repository.MainRepository
-import com.elshan.shiftnoc.notification.AlarmReceiver
-import com.elshan.shiftnoc.notification.NotificationsService
+import com.elshan.shiftnoc.notification.local.AlarmReceiver
+import com.elshan.shiftnoc.notification.local.NotificationsService
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.calendar.VacationDays
 import com.elshan.shiftnoc.presentation.components.DayType
 import com.elshan.shiftnoc.presentation.components.ShiftType
 import com.elshan.shiftnoc.presentation.components.WorkPattern
-import com.elshan.shiftnoc.presentation.components.getAllWorkPatterns
 import com.elshan.shiftnoc.presentation.datastore.UserPreferencesRepository
-import com.elshan.shiftnoc.util.enums.CalendarView
 import com.elshan.shiftnoc.util.SnackbarManager
+import com.elshan.shiftnoc.util.enums.CalendarView
 import com.elshan.shiftnoc.util.enums.DateKind
 import com.elshan.shiftnoc.util.enums.DateSort
 import com.elshan.shiftnoc.util.updateLocale
@@ -81,6 +80,7 @@ class CalendarViewModel @Inject constructor(
         loadRequestExactAlarmPermission()
         loadVacations()
         loadDayColors()
+        loadIncomeOnPaper()
     }
 
     private fun fetchAllNotes() {
@@ -163,6 +163,7 @@ class CalendarViewModel @Inject constructor(
             is CalendarEvent.ShowToast -> showToast(event.message)
             is CalendarEvent.SaveDayColor -> saveDayColor(event.dayType, event.color)
             is CalendarEvent.ResetDayColors -> resetDayColors()
+            is CalendarEvent.SaveIncome -> saveIncomeOnPaper(event.income)
         }
     }
 
@@ -320,7 +321,7 @@ class CalendarViewModel @Inject constructor(
             val intent = Intent(app, AlarmReceiver::class.java)
             val pendingIntent = PendingIntent.getBroadcast(
                 app,
-                note.id.hashCode(),
+                note.id.toInt(),
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
@@ -614,8 +615,8 @@ class CalendarViewModel @Inject constructor(
             DayType.WORK_MORNING to "#A3C9FE",
             DayType.WORK_NIGHT to "#E1E2E8",
             DayType.WORK_OFF to "#00000000",
-            DayType.VACATION to "#FFC107",
-            DayType.HOLIDAY to "#00000000"
+            DayType.VACATION to "#00D100",
+            DayType.HOLIDAY to "#D1D100"
         )
         viewModelScope.launch {
             userPreferencesRepository.resetDayColors(defaultColors)
@@ -623,6 +624,20 @@ class CalendarViewModel @Inject constructor(
                 it.copy(
                     selectedDayColor = defaultColors
                 )
+            }
+        }
+    }
+
+    private fun saveIncomeOnPaper(income: Double) {
+        viewModelScope.launch {
+            userPreferencesRepository.saveIncomeOnPaper(income.toString())
+        }
+    }
+
+    private fun loadIncomeOnPaper() {
+        viewModelScope.launch {
+            userPreferencesRepository.loadIncomeOnPaper.collect { income ->
+                _appState.update { it.copy(onPaper = income.toDoubleOrNull() ?: 0.0) }
             }
         }
     }
@@ -637,6 +652,5 @@ class CalendarViewModel @Inject constructor(
             Toast.LENGTH_SHORT
         ).show()
     }
-
 
 }

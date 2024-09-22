@@ -1,4 +1,4 @@
-package com.elshan.shiftnoc.notification
+package com.elshan.shiftnoc.notification.local
 
 import android.content.BroadcastReceiver
 import android.content.Context

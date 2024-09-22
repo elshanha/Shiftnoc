@@ -11,7 +11,6 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -25,7 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.elshan.shiftnoc.navigation.NavGraph
-import com.elshan.shiftnoc.notification.RequestExactAlarmPermissionDialog
+import com.elshan.shiftnoc.notification.local.RequestExactAlarmPermissionDialog
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.main.components.ShowAutostartInstructionsDialogIfNeeded
@@ -34,6 +33,7 @@ import com.elshan.shiftnoc.presentation.viewmodel.CalendarViewModel
 import com.elshan.shiftnoc.ui.theme.ShiftnocTheme
 import com.elshan.shiftnoc.util.CustomSnackbarHost
 import com.elshan.shiftnoc.util.DIALOGS
+import com.elshan.shiftnoc.util.updateLocale
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -54,7 +54,6 @@ class MainActivity : ComponentActivity() {
             }
         }
         enableEdgeToEdge()
-
         setContent {
             val calendarState by calendarViewModel.appState.collectAsStateWithLifecycle()
             ShiftnocTheme(
@@ -89,10 +88,12 @@ class MainActivity : ComponentActivity() {
                     HandleNotificationPermission(calendarViewModel)
 
                     // Handle exact alarm permission for Android 12+
-                    HandleExactAlarmPermission(
-                        appState = calendarState,
-                        onEvent = calendarViewModel::onEvent
-                    )
+//                    HandleExactAlarmPermission(
+//                        appState = calendarState,
+//                        onEvent = calendarViewModel::onEvent
+//                    )
+
+                    val context = LocalContext.current
 
                     Box(
                         Modifier
@@ -107,9 +108,21 @@ class MainActivity : ComponentActivity() {
                                     onEvent = calendarViewModel::onEvent
                                 )
                             } else {
-                                OnBoardingScreen {
-                                    calendarViewModel.onEvent(CalendarEvent.OnBoardingCompleted)
-                                }
+                                OnBoardingScreen(
+                                    onFinish = {
+                                        calendarViewModel.onEvent(CalendarEvent.OnBoardingCompleted)
+                                    },
+                                    defaultLanguage = calendarState.language,
+                                    onSelect = {
+                                        calendarViewModel.onEvent(
+                                            CalendarEvent.SetLanguagePreference(
+                                                it,
+                                                context
+                                            )
+                                        )
+                                        updateLocale(context, it)
+                                    }
+                                )
                             }
                         }
                     }

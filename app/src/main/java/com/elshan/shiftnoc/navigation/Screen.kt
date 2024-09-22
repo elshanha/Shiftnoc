@@ -9,5 +9,9 @@ sealed class Screen {
     @Serializable
     data object Settings : Screen()
 
+    @Serializable
+    data class Details(
+        val title: String,
+    ) : Screen()
 
 }

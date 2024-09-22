@@ -1,9 +1,8 @@
-package com.elshan.shiftnoc.notification
+package com.elshan.shiftnoc.notification.local
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.elshan.shiftnoc.data.repository.MainRepositoryImpl
 import com.elshan.shiftnoc.domain.repository.MainRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope

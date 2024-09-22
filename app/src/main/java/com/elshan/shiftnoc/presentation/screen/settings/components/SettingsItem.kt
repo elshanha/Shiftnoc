@@ -88,12 +88,6 @@ fun CategoryItemComponent(title: String, icon: ImageVector, onClick: () -> Unit)
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onPrimary
         )
-        Icon(
-            modifier = Modifier.size(16.dp),
-            imageVector = Icons.Default.ArrowForwardIos,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimary
-        )
     }
 }
 

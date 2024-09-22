@@ -54,7 +54,7 @@ fun CustomSnackbar(
                 text = snackbarData.visuals.message,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onPrimary,
                 style = MaterialTheme.typography.bodyMedium
             )
             snackbarData.visuals.actionLabel?.let { actionLabel ->

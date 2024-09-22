@@ -21,8 +21,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.util.DIALOGS
@@ -41,17 +43,17 @@ fun ShowAutostartInstructionsDialogIfNeeded(
             onEvent(CalendarEvent.HideDialog(DIALOGS.SHOW_AUTOSTART_INSTRUCTIONS))
         },
         title = {
-            Text(text = "Enable Autostart", style = MaterialTheme.typography.headlineSmall)
+            Text(text = stringResource(R.string.enable_autostart), style = MaterialTheme.typography.headlineSmall)
         },
         text = {
             Column {
                 Text(
-                    text = "To ensure notifications work properly, please enable Autostart and disable battery optimization for this app in your device settings.",
+                    text = stringResource(R.string.to_ensure_notifications_work_properly_please_enable_autostart_and_disable_battery_optimization_for_this_app_in_your_device_settings),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
                     modifier = Modifier.padding(top = 8.dp),
-                    text = "Settings -> Apps -> Permissions -> Enable Autostart -> Shiftnoc",
+                    text = stringResource(R.string.settings_apps_permissions_enable_autostart_shiftnoc),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -85,7 +87,7 @@ fun ShowAutostartInstructionsDialogIfNeeded(
                             } catch (ex: Exception) {
                                 Toast.makeText(
                                     context,
-                                    "Unable to open settings",
+                                    R.string.unable_to_open_settings,
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
@@ -95,7 +97,7 @@ fun ShowAutostartInstructionsDialogIfNeeded(
                     onEvent(CalendarEvent.SetAutostartInstructionsShown)
                 }
             ) {
-                Text("Open Settings")
+                Text(stringResource(R.string.open_settings))
             }
         },
         dismissButton = {
@@ -105,7 +107,7 @@ fun ShowAutostartInstructionsDialogIfNeeded(
                     onEvent(CalendarEvent.SetAutostartInstructionsShown)
                 }
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

@@ -55,7 +55,9 @@ object PreferencesKeys {
     val SHOW_AUTOSTART_INSTRUCTIONS = booleanPreferencesKey("show_autostart_instructions")
     val REQUEST_EXACT_ALARM_PERMISSION = booleanPreferencesKey("request_exact_alarm_permission")
     val VACATIONS = stringPreferencesKey("vacations")
-    val DAY_COLORS = stringPreferencesKey("day_colors") }
+    val DAY_COLORS = stringPreferencesKey("day_colors")
+    val INCOME_ON_PAPER = stringPreferencesKey("income_on_paper")
+}
 
 class UserPreferencesRepository(context: Context) {
 
@@ -288,7 +290,20 @@ class UserPreferencesRepository(context: Context) {
 
     fun loadDayColors(): Flow<Map<DayType, String>> = userPreferencesFlow.map { it.dayColors }
 
+    suspend fun saveIncomeOnPaper(incomeOnPaper: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.INCOME_ON_PAPER] = incomeOnPaper
+        }
+
+    }
+
+    val loadIncomeOnPaper: Flow<String> = dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.INCOME_ON_PAPER] ?: ""
+        }
+
 }
+
 
 data class UserPreferences(
     val dayColors: Map<DayType, String> = emptyMap()

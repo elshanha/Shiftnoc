@@ -4,10 +4,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.calendar.AppState
-import com.elshan.shiftnoc.presentation.components.getDayType
-import com.elshan.shiftnoc.presentation.components.getShiftType
+import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
+import com.elshan.shiftnoc.presentation.components.getCombinedDayType
 import com.elshan.shiftnoc.presentation.screen.calendar.components.WeekDayComponent
 import com.elshan.shiftnoc.util.DIALOGS
 import com.kizitonwose.calendar.compose.WeekCalendar
@@ -38,18 +37,19 @@ fun WeeklyCalendar(
 
             val shiftType = appState.startDate?.let {
                 appState.selectedPattern?.let { pattern ->
-                    getDayType(
+                    getCombinedDayType(
                         date = day.date,
                         workPattern = pattern,
                         startDate = it,
-                        vacations = appState.vacations
+                        vacations = appState.vacations,
+                        holidays = appState.holidaysList
                     )
                 }
             }
 
             WeekDayComponent(
                 day = day,
-                dayType = shiftType,
+                combinedDayType = shiftType,
                 appState = appState,
                 onClick = {
                     appState.selectedDate = day.date

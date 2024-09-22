@@ -18,5 +18,7 @@ object DIALOGS {
     const val VACATION_DIALOG = "vacationDialog"
     const val VACATION_DATE_DIALOG = "vacationDateDialog"
     const val SHOW_BOTTOM_SHEET = "bottomSheetDialog"
+    const val SHOW_INCOME_DATE_DIALOG = "incomeDateDialog"
+    const val SHOW_MONTH_DETAILS_DIALOG = "monthDetailsDialog"
 }
 

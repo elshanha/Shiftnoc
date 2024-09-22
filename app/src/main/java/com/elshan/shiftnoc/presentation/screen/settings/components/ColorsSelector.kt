@@ -58,8 +58,8 @@ fun ColorsSelector(
         DayType.WORK_MORNING to "#A3C9FE",
         DayType.WORK_NIGHT to "#E1E2E8",
         DayType.WORK_OFF to "#00000000",
-        DayType.VACATION to "#FFC107",
-        DayType.HOLIDAY to "#00000000"
+        DayType.VACATION to "#00D100",
+        DayType.HOLIDAY to "#D1D100"
     )
     if (showDialog) {
         ColorPickerDialog(
@@ -158,7 +158,9 @@ fun ColorsSelectorPreview() {
             selectedDayColors = mapOf(
                 DayType.WORK_MORNING to "#FF0000",
                 DayType.WORK_NIGHT to "#00FF00",
-                DayType.WORK_OFF to "#FFFFFF"
+                DayType.WORK_OFF to "#FFFFFF",
+                DayType.VACATION to "#FFC107",
+                DayType.HOLIDAY to "#FFFF00"
             )
         )
     }

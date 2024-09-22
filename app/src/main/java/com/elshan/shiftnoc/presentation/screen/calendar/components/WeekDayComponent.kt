@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.elshan.shiftnoc.presentation.calendar.AppState
+import com.elshan.shiftnoc.presentation.components.CombinedDayType
 import com.elshan.shiftnoc.presentation.components.DayType
 import com.elshan.shiftnoc.presentation.components.ShiftType
 import com.elshan.shiftnoc.presentation.screen.settings.components.toColor
@@ -40,37 +41,59 @@ import java.util.Locale
 @Composable
 fun WeekDayComponent(
     day: WeekDay,
-    dayType: DayType?,
+    combinedDayType: CombinedDayType?,
     onClick: (WeekDay) -> Unit,
     appState: AppState
 ) {
 
-    val backgroundColor = when (dayType) {
-        DayType.WORK_MORNING -> appState.selectedDayColor[DayType.WORK_MORNING]?.toColor()
-            ?: MaterialTheme.colorScheme.primary
+    val backgroundColor = when {
+        combinedDayType?.isHoliday == true && combinedDayType.workDayType == DayType.WORK_MORNING ->
+            appState.selectedDayColor[DayType.WORK_MORNING]?.toColor()
+                ?: MaterialTheme.colorScheme.primary
 
-        DayType.WORK_NIGHT -> appState.selectedDayColor[DayType.WORK_NIGHT]?.toColor()
-            ?: MaterialTheme.colorScheme.secondary
+        combinedDayType?.isHoliday == true && combinedDayType.workDayType == DayType.WORK_NIGHT ->
+            appState.selectedDayColor[DayType.WORK_NIGHT]?.toColor()
+                ?: MaterialTheme.colorScheme.secondary
 
-        DayType.WORK_OFF -> appState.selectedDayColor[DayType.WORK_OFF]?.toColor()
-            ?: Color.Transparent
+        combinedDayType?.isHoliday == true ->
+            appState.selectedDayColor[DayType.HOLIDAY]?.toColor()
+                ?: MaterialTheme.colorScheme.tertiary
 
-        DayType.VACATION -> appState.selectedDayColor[DayType.VACATION]?.toColor()
-            ?: MaterialTheme.colorScheme.tertiary
+        combinedDayType?.workDayType == DayType.WORK_MORNING ->
+            appState.selectedDayColor[DayType.WORK_MORNING]?.toColor()
+                ?: MaterialTheme.colorScheme.primary
 
-        DayType.HOLIDAY -> appState.selectedDayColor[DayType.HOLIDAY]?.toColor()
-            ?: MaterialTheme.colorScheme.onBackground
+        combinedDayType?.workDayType == DayType.WORK_NIGHT ->
+            appState.selectedDayColor[DayType.WORK_NIGHT]?.toColor()
+                ?: MaterialTheme.colorScheme.secondary
 
-        null -> Color.Transparent // Default for no shift type
+        combinedDayType?.workDayType == DayType.WORK_OFF ->
+            appState.selectedDayColor[DayType.WORK_OFF]?.toColor()
+                ?: Color.Transparent
+
+        combinedDayType?.workDayType == DayType.VACATION ->
+            appState.selectedDayColor[DayType.VACATION]?.toColor()
+                ?: MaterialTheme.colorScheme.tertiary
+
+        else -> Color.Transparent
     }
 
-    val textColor = when (dayType) {
-        DayType.WORK_MORNING -> MaterialTheme.colorScheme.background
-        DayType.WORK_NIGHT -> MaterialTheme.colorScheme.background
-        DayType.WORK_OFF -> MaterialTheme.colorScheme.secondary
-        DayType.VACATION -> MaterialTheme.colorScheme.background
-        DayType.HOLIDAY -> MaterialTheme.colorScheme.background
-        null -> MaterialTheme.colorScheme.secondary // Default for no shift type
+    // Handle text color based on workday and holiday combination
+    val textColor = when {
+        combinedDayType?.isHoliday == true -> MaterialTheme.colorScheme.background
+        combinedDayType?.workDayType == DayType.WORK_MORNING -> MaterialTheme.colorScheme.background
+        combinedDayType?.workDayType == DayType.WORK_NIGHT -> MaterialTheme.colorScheme.background
+        combinedDayType?.workDayType == DayType.WORK_OFF -> MaterialTheme.colorScheme.secondary
+        combinedDayType?.workDayType == DayType.VACATION -> MaterialTheme.colorScheme.background
+        else -> MaterialTheme.colorScheme.secondary // Default for no shift type
+    }
+    val borderColor = when {
+        appState.morningWorkDays.contains(day.date) && appState.holidaysList.contains(day.date) -> MaterialTheme.colorScheme.error // Border for morning workdays coinciding with holidays
+        appState.nightWorkDays.contains(day.date) && appState.holidaysList.contains(day.date) -> MaterialTheme.colorScheme.error // Border for night workdays coinciding with holidays
+        appState.holidaysList.contains(day.date) -> MaterialTheme.colorScheme.error // Border for holidays
+        combinedDayType?.workDayType == DayType.HOLIDAY -> MaterialTheme.colorScheme.error // Border for holidays
+        day.date == LocalDate.now() -> MaterialTheme.colorScheme.onBackground // Border for today
+        else -> Color.Transparent
     }
 
     val dayTextStyle = MaterialTheme.typography.bodyLarge
@@ -84,8 +107,8 @@ fun WeekDayComponent(
                 backgroundColor
             )
             .border(
-                if (day.date == LocalDate.now()) 2.dp else (-1).dp,
-                MaterialTheme.colorScheme.onBackground,
+                width = if (borderColor != Color.Transparent) 3.dp else (-1).dp,
+                color = borderColor,
                 RoundedCornerShape(8.dp)
             )
             .clickable { onClick(day) },

@@ -1,15 +1,20 @@
 package com.elshan.shiftnoc.presentation.screen.settings
 
+import android.app.Dialog
+import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.ColorLens
@@ -23,6 +28,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -33,12 +40,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.screen.settings.components.CalendarViewSelector
 import com.elshan.shiftnoc.presentation.screen.settings.components.ColorsSelector
+import com.elshan.shiftnoc.presentation.screen.settings.components.IncomeCalculator
 import com.elshan.shiftnoc.presentation.screen.settings.components.LanguageSelector
 import com.elshan.shiftnoc.presentation.screen.settings.components.SettingsComponent
 import com.elshan.shiftnoc.presentation.screen.settings.components.SettingsItem
@@ -87,6 +96,13 @@ fun SettingsScreen(
                 showBottomSheetById = R.string.color_picker
             },
             icon = Icons.Outlined.ColorLens,
+        ),
+        SettingsItem(
+            title = stringResource(R.string.add_your_salary),
+            onClick = {
+                showBottomSheetById = R.string.add_your_salary
+            },
+            icon = Icons.Outlined.Calculate,
         )
     )
 
@@ -115,7 +131,11 @@ fun SettingsScreen(
         if (showBottomSheetById != 0) {
             ModalBottomSheet(
                 dragHandle = {
-                    Box(modifier = Modifier.fillMaxWidth().padding(top = 16.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                    )
                 },
                 onDismissRequest = {
                     showBottomSheetById = 0
@@ -155,10 +175,19 @@ fun SettingsScreen(
                                 },
                             )
                         }
+
+                        R.string.add_your_salary -> {
+                            IncomeCalculator(
+                                appState = appState,
+                                onEvent = onEvent
+                            )
+                        }
                     }
                 }
             }
         }
+
+
 
 
         Column(
@@ -178,6 +207,8 @@ fun SettingsScreen(
                 )
             }
         }
+
+
     }
 }
 

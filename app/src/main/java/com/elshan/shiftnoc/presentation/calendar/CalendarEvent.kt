@@ -54,4 +54,5 @@ sealed class CalendarEvent {
 
     data class SaveDayColor(val dayType: DayType, val color: String) : CalendarEvent()
     data object ResetDayColors : CalendarEvent()
+    data class SaveIncome(val income: Double) : CalendarEvent()
 }

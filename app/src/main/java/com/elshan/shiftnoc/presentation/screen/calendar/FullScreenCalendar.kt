@@ -1,9 +1,9 @@
 package com.elshan.shiftnoc.presentation.screen.calendar
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
@@ -19,9 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,17 +32,19 @@ import com.elshan.shiftnoc.presentation.components.CustomMonthHeader
 import com.elshan.shiftnoc.presentation.components.Header
 import com.elshan.shiftnoc.presentation.components.MonthBody
 import com.elshan.shiftnoc.presentation.components.MonthHeader
-import com.elshan.shiftnoc.presentation.components.getDayType
+import com.elshan.shiftnoc.presentation.components.getCombinedDayType
+import com.elshan.shiftnoc.presentation.main.HandleExactAlarmPermission
 import com.elshan.shiftnoc.presentation.screen.calendar.components.ActionsSection
 import com.elshan.shiftnoc.presentation.screen.calendar.components.MonthDayComponent
 import com.elshan.shiftnoc.presentation.screen.calendar.week.WeeklyCalendar
 import com.elshan.shiftnoc.presentation.screen.note.AddEditNoteDialog
-import com.elshan.shiftnoc.presentation.screen.note.AddNoteBottomSheet
-import com.elshan.shiftnoc.util.enums.CalendarView
 import com.elshan.shiftnoc.util.DIALOGS
 import com.elshan.shiftnoc.util.bottomWindowInsetsPadding
 import com.elshan.shiftnoc.util.displayText
 import com.elshan.shiftnoc.util.endWindowInsetsPadding
+import com.elshan.shiftnoc.util.enums.CalendarView
+import com.elshan.shiftnoc.util.holiday.getAllHolidaysForYear
+import com.elshan.shiftnoc.util.holiday.getAllHolidaysForYearRange
 import com.elshan.shiftnoc.util.startWindowInsetsPadding
 import com.kizitonwose.calendar.compose.ContentHeightMode
 import com.kizitonwose.calendar.compose.HorizontalCalendar
@@ -54,6 +54,7 @@ import com.kizitonwose.calendar.core.OutDateStyle
 import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.core.yearMonth
 import java.time.LocalDate
+import java.time.Month
 import java.time.Year
 import java.util.Locale
 
@@ -64,7 +65,6 @@ fun FullScreenCalendar(
     appState: AppState,
     navController: NavController,
 ) {
-
     val selectedMonth = LocalDate.now().yearMonth
     val currentMonth = remember { selectedMonth }
     val startMonth = remember { currentMonth.minusMonths(50) }
@@ -75,6 +75,11 @@ fun FullScreenCalendar(
         )
     }
 
+    HandleExactAlarmPermission(
+        appState = appState,
+        onEvent = onEvent
+    )
+
     val monthState = rememberCalendarState(
         startMonth = startMonth,
         endMonth = endMonth,
@@ -83,6 +88,17 @@ fun FullScreenCalendar(
         outDateStyle = OutDateStyle.EndOfRow
     )
 
+    val currentMonthHoliday = monthState.firstVisibleMonth.yearMonth
+    val currentYear = currentMonthHoliday.year
+
+    val nextYear = currentMonthHoliday.plusMonths(+1).year
+
+    LaunchedEffect(currentYear, nextYear) {
+        val updatedHolidays = getAllHolidaysForYearRange(currentYear)
+        appState.holidaysList = updatedHolidays
+    }
+
+
     if (appState.visibleDialogs.contains(DIALOGS.ADD_EDIT_NOTE)) {
         AddEditNoteDialog(
             appState = appState,
@@ -90,13 +106,15 @@ fun FullScreenCalendar(
         )
     }
 
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
+        Column(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+        ) {
 
             AnimatedVisibility(
                 visible = appState.calendarView == CalendarView.HORIZONTAL_MONTHLY,
@@ -143,18 +161,19 @@ fun FullScreenCalendar(
                         dayContent = { day ->
                             val shiftType = appState.startDate?.let {
                                 appState.selectedPattern?.let { pattern ->
-                                    getDayType(
+                                    getCombinedDayType(
                                         date = day.date,
                                         workPattern = pattern,
                                         startDate = it,
-                                        vacations = appState.vacations
+                                        vacations = appState.vacations,
+                                        holidays = appState.holidaysList
                                     )
                                 }
                             }
 
                             MonthDayComponent(
                                 day = day,
-                                dayType = shiftType,
+                                combinedDayType = shiftType,
                                 appState = appState,
                                 onClick = {
                                     appState.selectedDate = day.date
@@ -216,18 +235,19 @@ fun FullScreenCalendar(
                     dayContent = { day ->
                         val shiftType = appState.startDate?.let {
                             appState.selectedPattern?.let { pattern ->
-                                getDayType(
+                                getCombinedDayType(
                                     date = day.date,
                                     workPattern = pattern,
                                     startDate = it,
-                                    vacations = appState.vacations
+                                    vacations = appState.vacations,
+                                    holidays = appState.holidaysList
                                 )
                             }
                         }
 
                         MonthDayComponent(
                             day = day,
-                            dayType = shiftType,
+                            combinedDayType = shiftType,
                             appState = appState,
                             onClick = {
                                 appState.selectedDate = day.date
@@ -239,7 +259,13 @@ fun FullScreenCalendar(
                             }
                         )
                     },
-                    monthHeader = { month -> MonthHeader(month) },
+                    monthHeader = { month ->
+                        MonthHeader(
+                            month = month,
+                            navController = navController,
+                            appState = appState
+                        )
+                    },
                     monthBody = { _, content -> MonthBody(content) },
                 )
             }

@@ -10,6 +10,7 @@ import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.datastore.UserPreferencesRepository
 import com.elshan.shiftnoc.presentation.screen.calendar.FullScreenCalendar
+import com.elshan.shiftnoc.presentation.screen.details.DetailsScreen
 import com.elshan.shiftnoc.presentation.screen.settings.SettingsScreen
 import com.elshan.shiftnoc.util.updateLocale
 
@@ -45,6 +46,16 @@ fun NavGraph(
                 onEvent = onEvent,
                 appState = appState,
                 navController = navController
+            )
+        }
+
+        composable<Screen.Details> {
+            val args = it.arguments
+
+            DetailsScreen(
+                title = args?.getString("title") ?: "",
+                appState = appState,
+                onEvent = onEvent
             )
         }
     }

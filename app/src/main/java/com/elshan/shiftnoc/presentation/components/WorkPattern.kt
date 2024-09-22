@@ -1,9 +1,14 @@
 package com.elshan.shiftnoc.presentation.components
 
 import android.content.Context
+import android.util.Log
 import com.elshan.shiftnoc.R
+import com.elshan.shiftnoc.presentation.calendar.AppState
 import com.elshan.shiftnoc.presentation.calendar.VacationDays
+import com.kizitonwose.calendar.core.CalendarMonth
 import java.time.LocalDate
+import java.time.Month
+import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 
 data class WorkPattern(
@@ -12,7 +17,6 @@ data class WorkPattern(
     val pattern: List<ShiftType>,
     val isCustom: Boolean = true
 )
-
 
 val defaultWorkPattern = WorkPattern(
     nameResId = R.string.default_work_pattern,
@@ -32,7 +36,7 @@ enum class ShiftType(
 enum class DayType(
     val stringResId: Int,
     val shiftType: ShiftType? = null,
-    var color: String? = null  // I newly added this line
+    var color: String? = null
 ) {
     WORK_MORNING(R.string.shift_morning, ShiftType.MORNING),
     WORK_NIGHT(R.string.shift_night, ShiftType.NIGHT),
@@ -40,11 +44,6 @@ enum class DayType(
     VACATION(R.string.day_vacation),
     HOLIDAY(R.string.day_holiday)
 }
-
-fun getShiftType(dayType: DayType): ShiftType? {
-    return dayType.shiftType
-}
-
 
 val predefinedWorkPatterns = listOf(
     defaultWorkPattern,
@@ -68,49 +67,36 @@ val predefinedWorkPatterns = listOf(
     ),
 )
 
-fun getAllWorkPatterns(customPatterns: List<WorkPattern>): List<WorkPattern> {
-    return predefinedWorkPatterns + customPatterns
-}
-
 fun ShiftType.getName(context: Context): String {
     return context.getString(this.stringResId)
 }
 
+data class CombinedDayType(
+    val workDayType: DayType? = null,
+    val isHoliday: Boolean = false
+)
 
-fun getShiftType(date: LocalDate, workPattern: WorkPattern, startDate: LocalDate): ShiftType? {
-    if (workPattern.pattern.isEmpty()) {
-        return null // Return null if the pattern list is empty
-    }
-
-    val daysBetween = ChronoUnit.DAYS.between(startDate, date).toInt()
-    return if (daysBetween >= 0) {
-        val type = workPattern.pattern[daysBetween % workPattern.pattern.size]
-        type
-    } else {
-        null
-    }
-}
-
-fun getDayType(
+fun getCombinedDayType(
     date: LocalDate,
     workPattern: WorkPattern,
     startDate: LocalDate,
-    vacations: List<VacationDays>
-): DayType? {
+    vacations: List<VacationDays>,
+    holidays: List<LocalDate>
+): CombinedDayType {
+
     // Check if the date is within any vacation range
     vacations.forEach { vacation ->
         if (date in vacation.startDate..vacation.endDate) {
-            return DayType.VACATION
+            return CombinedDayType(workDayType = DayType.VACATION)
         }
     }
 
-    // Continue with the existing logic for work patterns
     if (workPattern.pattern.isEmpty()) {
-        return null // Return null if the pattern list is empty
+        return CombinedDayType()
     }
 
     val daysBetween = ChronoUnit.DAYS.between(startDate, date).toInt()
-    return if (daysBetween >= 0) {
+    val workDayType = if (daysBetween >= 0) {
         val type = workPattern.pattern[daysBetween % workPattern.pattern.size]
         when (type) {
             ShiftType.MORNING -> DayType.WORK_MORNING
@@ -120,25 +106,83 @@ fun getDayType(
     } else {
         null
     }
+
+    // Determine if it's a holiday
+    val isHoliday = holidays.contains(date)
+
+    // Return both the workday type and holiday status
+    return CombinedDayType(
+        workDayType = workDayType,
+        isHoliday = isHoliday
+    )
 }
 
 
+class ListOfDays(var appState: AppState) {
+
+    fun getListOfDaysPerMonth(
+        year: Int,
+        month: Month,
+        workPattern: WorkPattern = appState.selectedPattern ?: defaultWorkPattern,
+        startDate: LocalDate = appState.startDate ?: LocalDate.of(2024, 1, 1),
+        vacations: List<VacationDays> = appState.vacations
+    ): List<Pair<LocalDate, DayType?>> {
+
+        val daysInMonth = mutableListOf<Pair<LocalDate, DayType?>>()
+
+        val startOfMonth = LocalDate.of(year, month, 1)
+        val endOfMonth = startOfMonth.plusMonths(1).minusDays(1)
+
+        var currentDate = startOfMonth
+        while (!currentDate.isAfter(endOfMonth)) {
+            val dayType =
+                getCombinedDayType(
+                    currentDate,
+                    workPattern,
+                    startDate,
+                    vacations,
+                    appState.holidaysList
+                )
+            daysInMonth.add(Pair(currentDate, dayType.workDayType))
+            currentDate = currentDate.plusDays(1)
+        }
+
+        val morningDays: List<LocalDate> =
+            daysInMonth.filter { it.second == DayType.WORK_MORNING }.map { it.first }
+        appState.morningWorkDays = morningDays
+        val nightDays: List<LocalDate> =
+            daysInMonth.filter { it.second == DayType.WORK_NIGHT }.map { it.first }
+        appState.nightWorkDays = nightDays
+
+        Log.d("listOfDays", daysInMonth.toString())
+        return daysInMonth
+    }
+}
 
 
+fun countVacationOverlapWithWorkdays(
+    vacation: VacationDays,
+    workPattern: WorkPattern,
+    startDate: LocalDate
+): Int {
+    var overlapCount = 0
 
+    var currentDate = vacation.startDate
+    while (currentDate <= vacation.endDate) {
+        val daysBetween = ChronoUnit.DAYS.between(startDate, currentDate).toInt()
 
+        if (daysBetween >= 0) {
+            val type = workPattern.pattern[daysBetween % workPattern.pattern.size]
 
+            if (type == ShiftType.MORNING || type == ShiftType.NIGHT) {
+                overlapCount++
+            }
+        }
+        currentDate = currentDate.plusDays(1)
+    }
 
-
-
-
-
-
-
-
-
-
-
+    return overlapCount
+}
 
 
 

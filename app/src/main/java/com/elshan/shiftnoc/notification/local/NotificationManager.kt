@@ -1,4 +1,4 @@
-package com.elshan.shiftnoc.notification
+package com.elshan.shiftnoc.notification.local
 
 import android.app.AlarmManager
 import android.app.Notification
@@ -7,35 +7,24 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.media.AudioAttributes
-import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
-import android.provider.Settings
-import android.util.Log
-import android.widget.Toast
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.ui.util.trace
 import androidx.core.app.NotificationCompat
 import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.data.local.NoteEntity
-import com.elshan.shiftnoc.domain.repository.MainRepository
-import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
-import java.time.LocalDateTime
+import com.elshan.shiftnoc.presentation.main.MainActivity
 import java.time.ZoneId
 import javax.inject.Inject
 
 const val NOTIFICATION_CHANNEL_ID = "CH-1"
 const val NOTIFICATION_CHANNEL_NAME = "Reminder"
+const val NOTIFICATION_ID = 1
+const val REQUEST_CODE = 100
 
 interface NotificationsService {
     suspend fun showNotification(note: NoteEntity, onPermissionError: () -> Unit = {})
+    suspend fun showFCMNotification(title: String?, body: String?)
     fun createNotificationChannel()
     fun hideNotification(note: NoteEntity)
 }
@@ -48,6 +37,17 @@ class NotificationsServiceImpl @Inject constructor(
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
+
+    private val myIntent = Intent(
+        context, MainActivity::class.java
+    )
+
+    private val myPendingIntent = PendingIntent.getActivity(
+        context,
+        REQUEST_CODE,
+        myIntent,
+        PendingIntent.FLAG_IMMUTABLE
+    )
 
     override suspend fun showNotification(note: NoteEntity, onPermissionError: () -> Unit) {
         val notificationTime =
@@ -84,6 +84,21 @@ class NotificationsServiceImpl @Inject constructor(
             )
         }
     }
+
+    override suspend fun showFCMNotification(title: String?, body: String?) {
+        if (!title.isNullOrEmpty() && !body.isNullOrEmpty()) {
+            val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.app_logo)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(myPendingIntent)
+                .build()
+
+            notificationManager.notify(NOTIFICATION_ID, notification)
+        }
+    }
+
 
     override fun createNotificationChannel() {
         val soundUri =

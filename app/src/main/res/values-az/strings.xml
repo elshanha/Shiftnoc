@@ -83,4 +83,23 @@
     <string name="max_vacations_reached">Məzuniyyət limitinə çatdınız</string>
     <string name="colors_reset">Rənglər sıfırlandı</string>
     <string name="reset">Sıfırla</string>
+    <string name="add_your_salary">Aylıq gəlirinizi əlavə edin</string>
+    <string name="income">Gəlir</string>
+    <string name="calculate">Hesabla</string>
+    <string name="enter_income">Aylıq gəlirinizi daxil edin</string>
+    <string name="manage_your_shifts">Günlərinizi idarə edin</string>
+    <string name="stay_on_track">İzləmədə qalın</string>
+    <string name="set_reminders">Xatırlatmalar qurun</string>
+    <string name="effortlessly_organize_and_customize_your_work_schedule">İş cədvəlinizi rahatlıqla özəlləşdirin və idarə edin.</string>
+    <string name="keep_track_of_your_work_hours_and_schedules_with_ease">İş saatlarınızı asanlıqla izləyin.</string>
+    <string name="never_miss_a_workday_again_with_personalized_reminders">Şəxsiləşdirilmiş bildirişlərlə heç nəyi unutmayın.</string>
+    <string name="enable_autostart">"Autostart"ı aktivləşdirin</string>
+    <string name="to_ensure_notifications_work_properly_please_enable_autostart_and_disable_battery_optimization_for_this_app_in_your_device_settings">Bildirişlərin düzgün işləməyini təmin etmək üçün, zəhmət olmasa bu tətbiq üçün "Autostart"ı aktivləşdirin.</string>
+    <string name="settings_apps_permissions_enable_autostart_shiftnoc"><![CDATA[Parametrlər -> Tətbiqlər -> İcazələr -> "Autostart"ı aktivləşdir -> Shiftnoc]]></string>
+    <string name="ok">Ok</string>
+    <string name="please_select_a_date">Zəhmət olmasa tarixi seçin</string>
+    <string name="to_see_your_income_for_a_specific_month_please_go_to_the_vertical_calendar_and_select_the_month_you_want_to_see">Hansısa bir aya uğun\naylıq gəlirinizi görmək üçün\nşaquli təqvimə keçid edin\nvə istədiyiniz ayı seçin.</string>
+    <string name="there_can_be_miscalculation_please_consider_that">Yanlışlıq ola bilər. Lütfən nəzərə alın.</string>
+    <string name="there_are_no_notes_to_delete">Heç bir not tapılmadı.</string>
+    <string name="no_notes_for_this_month">Bu ayda heç bir not tapılmadı.</string>
 </resources>

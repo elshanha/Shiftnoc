@@ -1,25 +1,19 @@
-package com.elshan.shiftnoc.notification
+package com.elshan.shiftnoc.notification.local
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.core.content.ContextCompat
 import com.elshan.shiftnoc.R
 import com.elshan.shiftnoc.presentation.calendar.CalendarEvent
 import com.elshan.shiftnoc.util.DIALOGS
@@ -50,7 +44,7 @@ fun RequestExactAlarmPermissionDialog(
                             }
                         context.startActivity(intent)
                         scope.launch {
-                            delay(1000)
+                            delay(500)
                             Toast.makeText(
                                 context,
                                 context.getString(R.string.please_allow),

@@ -38,11 +38,14 @@ object LocaleManager {
 
 fun updateLocale(context: Context, selectedLocale: String) {
     val updatedContext = LocaleManager.setLocale(context, selectedLocale)
+
     context.resources.updateConfiguration(
         updatedContext.resources.configuration,
         updatedContext.resources.displayMetrics
     )
 }
+
+
 
 fun YearMonth.displayText(short: Boolean = true): String {
     return if (this.year == Year.now().value) {
@@ -57,47 +60,20 @@ fun Month.displayText(short: Boolean = true): String {
     return getDisplayName(style, Locale.getDefault())
 }
 
-fun DayOfWeek.displayText(uppercase: Boolean = false): String {
-    return getDisplayName(TextStyle.SHORT, Locale.getDefault()).let { value ->
-        if (uppercase) value.uppercase(Locale.getDefault()) else value
+
+fun truncateDecimalPlaces(str: String): String {
+    val indexOfDot = str.indexOf(".")
+    if (indexOfDot < 0) {
+        return str // No decimal point found
     }
+
+
+    if (indexOfDot + 1 >= str.length) {
+        return str
+    }
+
+    val truncatedDecimalPart = str.substring(indexOfDot + 1, minOf(indexOfDot + 3, str.length))
+
+    return str.substring(0, indexOfDot + 1) + truncatedDecimalPart
 }
 
-fun Context.findActivity(): Activity {
-    var context = this
-    while (context is ContextWrapper) {
-        if (context is Activity) return context
-        context = context.baseContext
-    }
-    throw IllegalStateException("no activity")
-}
-
-fun getWeekPageTitle(week: Week): String {
-    val firstDate = week.days.first().date
-    val lastDate = week.days.last().date
-    return when {
-        firstDate.yearMonth == lastDate.yearMonth -> {
-            firstDate.yearMonth.displayText()
-        }
-        firstDate.year == lastDate.year -> {
-            "${firstDate.month.displayText(short = false)} - ${lastDate.yearMonth.displayText()}"
-        }
-        else -> {
-            "${firstDate.yearMonth.displayText()} - ${lastDate.yearMonth.displayText()}"
-        }
-    }
-}
-
-internal fun Context.getColorCompat(@ColorRes color: Int) =
-    ContextCompat.getColor(this, color)
-
-@Composable
-fun rememberFirstVisibleMonthAfterScroll(state: CalendarState): CalendarMonth {
-    val visibleMonth = remember(state) { mutableStateOf(state.firstVisibleMonth) }
-    LaunchedEffect(state) {
-        snapshotFlow { state.isScrollInProgress }
-            .filter { scrolling -> !scrolling }
-            .collect { visibleMonth.value = state.firstVisibleMonth }
-    }
-    return visibleMonth.value
-}

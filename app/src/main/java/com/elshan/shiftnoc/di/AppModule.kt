@@ -5,9 +5,8 @@ import android.content.Context
 import androidx.room.Room
 import com.elshan.shiftnoc.data.local.NoteDataBase
 import com.elshan.shiftnoc.data.repository.MainRepositoryImpl
-import com.elshan.shiftnoc.domain.repository.MainRepository
-import com.elshan.shiftnoc.notification.NotificationsService
-import com.elshan.shiftnoc.notification.NotificationsServiceImpl
+import com.elshan.shiftnoc.notification.local.NotificationsService
+import com.elshan.shiftnoc.notification.local.NotificationsServiceImpl
 import com.elshan.shiftnoc.presentation.datastore.UserPreferencesRepository
 import dagger.Module
 import dagger.Provides

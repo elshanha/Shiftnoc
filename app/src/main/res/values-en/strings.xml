@@ -77,6 +77,25 @@
     <string name="max_vacations_reached">Max vacations reached</string>
     <string name="colors_reset">Colors reset</string>
     <string name="reset">Reset</string>
+    <string name="add_your_salary">Add your salary</string>
+    <string name="income">Income</string>
+    <string name="calculate">Calculate</string>
+    <string name="enter_income">Please enter your income</string>
+    <string name="manage_your_shifts">Manage Your Shifts</string>
+    <string name="stay_on_track">Stay on Track</string>
+    <string name="set_reminders">Set Reminders</string>
+    <string name="effortlessly_organize_and_customize_your_work_schedule">Effortlessly organize and customize your work schedule.</string>
+    <string name="keep_track_of_your_work_hours_and_schedules_with_ease">Keep track of your work hours and schedules with ease.</string>
+    <string name="never_miss_a_workday_again_with_personalized_reminders">Never miss a workday again with personalized reminders.</string>
+    <string name="enable_autostart">Enable Autostart</string>
+    <string name="to_ensure_notifications_work_properly_please_enable_autostart_and_disable_battery_optimization_for_this_app_in_your_device_settings">To ensure notifications work properly, please enable Autostart and disable battery optimization for this app in your device settings.</string>
+    <string name="settings_apps_permissions_enable_autostart_shiftnoc"><![CDATA[Settings -> Apps -> Permissions -> Enable Autostart -> Shiftnoc]]></string>
+    <string name="ok">Ok</string>
+    <string name="please_select_a_date">Please select a date</string>
+    <string name="to_see_your_income_for_a_specific_month_please_go_to_the_vertical_calendar_and_select_the_month_you_want_to_see">To see your income for a specific month,\nplease go to the vertical calendar and\nselect the month you want to see.</string>
+    <string name="there_can_be_miscalculation_please_consider_that">There can be miscalculation. Please consider that.</string>
+    <string name="there_are_no_notes_to_delete">There are no notes to delete</string>
+    <string name="no_notes_for_this_month">No notes for this month.</string>
     />
 
 </resources>
